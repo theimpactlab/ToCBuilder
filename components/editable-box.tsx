@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect, useCallback, memo } from "react"
 import { cn } from "@/lib/utils"
 
 interface EditableBoxProps {
@@ -14,7 +14,8 @@ interface EditableBoxProps {
   onHeightChange?: (height: number) => void
 }
 
-export function EditableBox({
+// Use memo to prevent unnecessary re-renders
+export const EditableBox = memo(function EditableBox({
   value,
   onChange,
   placeholder = "Click to edit...",
@@ -28,73 +29,65 @@ export function EditableBox({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Update text when value prop changes
   useEffect(() => {
     setText(value)
   }, [value])
 
+  // Focus input when editing starts
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus()
     }
   }, [isEditing])
 
-  useEffect(() => {
+  // Update height for multiline inputs
+  const updateHeight = useCallback(() => {
     if (multiline && textareaRef.current && onHeightChange) {
-      // Reset height to auto to get the correct scrollHeight
-      textareaRef.current.style.height = "auto"
-      const scrollHeight = textareaRef.current.scrollHeight
-      textareaRef.current.style.height = `${scrollHeight}px`
-      onHeightChange(scrollHeight)
+      // Use requestAnimationFrame for smoother height adjustments
+      requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          // Reset height to auto to get the correct scrollHeight
+          textareaRef.current.style.height = "auto"
+          const scrollHeight = textareaRef.current.scrollHeight
+          textareaRef.current.style.height = `${scrollHeight}px`
+          onHeightChange(scrollHeight)
+        }
+      })
     }
-  }, [text, multiline, onHeightChange])
+  }, [multiline, onHeightChange])
 
-  const handleClick = () => {
+  // Update height when text changes
+  useEffect(() => {
+    updateHeight()
+  }, [text, updateHeight])
+
+  const handleClick = useCallback(() => {
     setIsEditing(true)
-  }
+  }, [])
 
-  const handleBlur = () => {
+  const handleBlur = useCallback(() => {
     setIsEditing(false)
     onChange(text)
-  }
+  }, [onChange, text])
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setText(e.target.value)
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setText(e.target.value)
+  }, [])
 
-      // Adjust height for textarea
-      if (multiline && e.target instanceof HTMLTextAreaElement) {
-        // Use requestAnimationFrame for smoother height adjustments
-        requestAnimationFrame(() => {
-          if (e.target) {
-            e.target.style.height = "auto"
-            e.target.style.height = `${e.target.scrollHeight}px`
-            onHeightChange?.(e.target.scrollHeight)
-          }
-        })
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !multiline) {
+        setIsEditing(false)
+        onChange(text)
+      }
+      if (e.key === "Escape") {
+        setText(value)
+        setIsEditing(false)
       }
     },
-    [multiline, onHeightChange],
+    [multiline, onChange, text, value],
   )
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !multiline) {
-      setIsEditing(false)
-      onChange(text)
-    }
-    if (e.key === "Escape") {
-      setText(value)
-      setIsEditing(false)
-    }
-  }
-
-  // Get the computed text color from the parent to use in the input/textarea
-  const getTextColor = () => {
-    if (containerRef.current) {
-      const computedStyle = window.getComputedStyle(containerRef.current)
-      return computedStyle.color
-    }
-    return "inherit"
-  }
 
   return (
     <div className="w-full h-full" ref={containerRef}>
@@ -145,4 +138,4 @@ export function EditableBox({
       )}
     </div>
   )
-}
+})

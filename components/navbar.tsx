@@ -3,16 +3,39 @@
 import { useState } from "react"
 import { ModeToggle } from "./mode-toggle"
 import { Button } from "@/components/ui/button"
-import { Download, Upload, Save, Share2, Settings, FileText, Palette, FileDown, HelpCircle } from "lucide-react"
+import {
+  Download,
+  Upload,
+  Save,
+  Share2,
+  Settings,
+  FileText,
+  Palette,
+  FileDown,
+  HelpCircle,
+  RefreshCw,
+} from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ColorThemeDialog } from "./color-theme-dialog"
 import { PdfExportDialog } from "./pdf-export-dialog"
 import { OpenAIQuotaGuide } from "./openai-quota-guide"
+import { useColorTheme } from "@/lib/color-theme-context"
+import { useToast } from "@/hooks/use-toast"
 
 export function Navbar() {
   const [isColorDialogOpen, setIsColorDialogOpen] = useState(false)
   const [isPdfExportDialogOpen, setIsPdfExportDialogOpen] = useState(false)
   const [isQuotaGuideOpen, setIsQuotaGuideOpen] = useState(false)
+  const { resetColors } = useColorTheme()
+  const { toast } = useToast()
+
+  const handleResetColors = () => {
+    resetColors()
+    toast({
+      title: "Colors Reset",
+      description: "The color theme has been reset to default.",
+    })
+  }
 
   return (
     <header className="border-b">
@@ -63,6 +86,10 @@ export function Navbar() {
               <DropdownMenuItem onClick={() => setIsColorDialogOpen(true)}>
                 <Palette className="h-4 w-4 mr-2" />
                 Color Theme
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleResetColors}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Reset Colors
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsQuotaGuideOpen(true)}>
                 <HelpCircle className="h-4 w-4 mr-2" />

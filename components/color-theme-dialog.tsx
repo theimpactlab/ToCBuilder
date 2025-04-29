@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useColorTheme } from "@/lib/color-theme-context"
 
 interface ColorThemeDialogProps {
   open: boolean
@@ -21,39 +22,7 @@ interface ColorThemeDialogProps {
 
 export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) {
   const [activeTab, setActiveTab] = useState("header")
-  const [colors, setColors] = useState({
-    header: "#475569",
-    need: "#475569",
-    flow: "#f1f5f9",
-    grouping: "#f5f5dc",
-    column1: "#e2e8f0",
-    column2: "#e2e8f0",
-    column3: "#e2e8f0",
-    column4: "#e2e8f0",
-    column5: "#e2e8f0",
-    column6: "#e2e8f0",
-  })
-
-  // Initialize colors from CSS variables when component mounts
-  useEffect(() => {
-    if (open) {
-      const root = document.documentElement
-      const style = getComputedStyle(root)
-
-      setColors({
-        header: style.getPropertyValue("--toc-header-bg").trim() || "#475569",
-        need: style.getPropertyValue("--toc-need-bg").trim() || "#475569",
-        flow: style.getPropertyValue("--toc-flow-bg").trim() || "#f1f5f9",
-        grouping: style.getPropertyValue("--toc-grouping-bg").trim() || "#f5f5dc",
-        column1: style.getPropertyValue("--toc-column-1-bg").trim() || "#e2e8f0",
-        column2: style.getPropertyValue("--toc-column-2-bg").trim() || "#e2e8f0",
-        column3: style.getPropertyValue("--toc-column-3-bg").trim() || "#e2e8f0",
-        column4: style.getPropertyValue("--toc-column-4-bg").trim() || "#e2e8f0",
-        column5: style.getPropertyValue("--toc-column-5-bg").trim() || "#e2e8f0",
-        column6: style.getPropertyValue("--toc-column-6-bg").trim() || "#e2e8f0",
-      })
-    }
-  }, [open])
+  const { colors, updateColor, updateAllColumnColors } = useColorTheme()
 
   // Function to determine if text should be white or black based on background color
   const getTextColor = (bgColor: string) => {
@@ -70,66 +39,6 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
 
     // Return white for dark backgrounds, black for light backgrounds
     return luminance > 0.5 ? "#000000" : "#ffffff"
-  }
-
-  // Modify the handleColorChange function to be more efficient
-  const handleColorChange = (variable: string, value: string) => {
-    // Update the state
-    if (variable === "toc-header") {
-      setColors((prev) => ({ ...prev, header: value }))
-    } else if (variable === "toc-need") {
-      setColors((prev) => ({ ...prev, need: value }))
-    } else if (variable === "toc-flow") {
-      setColors((prev) => ({ ...prev, flow: value }))
-    } else if (variable === "toc-grouping") {
-      setColors((prev) => ({ ...prev, grouping: value }))
-    } else if (variable === "toc-column-1") {
-      setColors((prev) => ({ ...prev, column1: value }))
-    } else if (variable === "toc-column-2") {
-      setColors((prev) => ({ ...prev, column2: value }))
-    } else if (variable === "toc-column-3") {
-      setColors((prev) => ({ ...prev, column3: value }))
-    } else if (variable === "toc-column-4") {
-      setColors((prev) => ({ ...prev, column4: value }))
-    } else if (variable === "toc-column-5") {
-      setColors((prev) => ({ ...prev, column5: value }))
-    } else if (variable === "toc-column-6") {
-      setColors((prev) => ({ ...prev, column6: value }))
-    }
-
-    // Use requestAnimationFrame to batch CSS updates for better performance
-    requestAnimationFrame(() => {
-      // Set the background color CSS variable
-      document.documentElement.style.setProperty(`--${variable}-bg`, value)
-
-      // Set the text color CSS variable based on the background color
-      const textColor = getTextColor(value)
-      document.documentElement.style.setProperty(`--${variable}-text`, textColor)
-    })
-  }
-
-  // Also optimize the updateAllColumnColors function
-  const updateAllColumnColors = (value: string) => {
-    // Update state for all columns
-    setColors((prev) => ({
-      ...prev,
-      column1: value,
-      column2: value,
-      column3: value,
-      column4: value,
-      column5: value,
-      column6: value,
-    }))
-
-    // Use requestAnimationFrame to batch CSS updates
-    requestAnimationFrame(() => {
-      // Update CSS variables for all columns
-      const textColor = getTextColor(value)
-      for (let i = 1; i <= 6; i++) {
-        document.documentElement.style.setProperty(`--toc-column-${i}-bg`, value)
-        document.documentElement.style.setProperty(`--toc-column-${i}-text`, textColor)
-      }
-    })
   }
 
   return (
@@ -157,7 +66,7 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
                     type="color"
                     value={colors.header}
                     className="w-12 h-10 p-1"
-                    onChange={(e) => handleColorChange("toc-header", e.target.value)}
+                    onChange={(e) => updateColor("header", e.target.value)}
                   />
                   <div
                     className="flex-1 h-10 rounded flex items-center justify-center"
@@ -179,7 +88,7 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
                     type="color"
                     value={colors.need}
                     className="w-12 h-10 p-1"
-                    onChange={(e) => handleColorChange("toc-need", e.target.value)}
+                    onChange={(e) => updateColor("need", e.target.value)}
                   />
                   <div
                     className="flex-1 h-10 rounded flex items-center justify-center"
@@ -205,7 +114,7 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
                     type="color"
                     value={colors.flow}
                     className="w-12 h-10 p-1"
-                    onChange={(e) => handleColorChange("toc-flow", e.target.value)}
+                    onChange={(e) => updateColor("flow", e.target.value)}
                   />
                   <div
                     className="flex-1 h-10 rounded flex items-center justify-center"
@@ -227,7 +136,7 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
                     type="color"
                     value={colors.grouping}
                     className="w-12 h-10 p-1"
-                    onChange={(e) => handleColorChange("toc-grouping", e.target.value)}
+                    onChange={(e) => updateColor("grouping", e.target.value)}
                   />
                   <div
                     className="flex-1 h-10 rounded flex items-center justify-center"
@@ -251,15 +160,15 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
                   <Input
                     id="all-columns-color"
                     type="color"
-                    value={colors.column1} // Use column1 as the reference
+                    value={colors.columns[0]} // Use first column as reference
                     className="w-12 h-10 p-1"
                     onChange={(e) => updateAllColumnColors(e.target.value)}
                   />
                   <div
                     className="flex-1 h-10 rounded flex items-center justify-center"
                     style={{
-                      backgroundColor: colors.column1,
-                      color: getTextColor(colors.column1),
+                      backgroundColor: colors.columns[0],
+                      color: getTextColor(colors.columns[0]),
                     }}
                   >
                     Apply to all columns
@@ -274,15 +183,15 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
                     <Input
                       id="column1-color"
                       type="color"
-                      value={colors.column1}
+                      value={colors.columns[0]}
                       className="w-12 h-10 p-1"
-                      onChange={(e) => handleColorChange("toc-column-1", e.target.value)}
+                      onChange={(e) => updateColor("column", e.target.value, 0)}
                     />
                     <div
                       className="flex-1 h-10 rounded flex items-center justify-center"
                       style={{
-                        backgroundColor: colors.column1,
-                        color: getTextColor(colors.column1),
+                        backgroundColor: colors.columns[0],
+                        color: getTextColor(colors.columns[0]),
                       }}
                     >
                       Preview
@@ -296,15 +205,15 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
                     <Input
                       id="column5-color"
                       type="color"
-                      value={colors.column5}
+                      value={colors.columns[4]}
                       className="w-12 h-10 p-1"
-                      onChange={(e) => handleColorChange("toc-column-5", e.target.value)}
+                      onChange={(e) => updateColor("column", e.target.value, 4)}
                     />
                     <div
                       className="flex-1 h-10 rounded flex items-center justify-center"
                       style={{
-                        backgroundColor: colors.column5,
-                        color: getTextColor(colors.column5),
+                        backgroundColor: colors.columns[4],
+                        color: getTextColor(colors.columns[4]),
                       }}
                     >
                       Preview
@@ -318,15 +227,15 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
                     <Input
                       id="column6-color"
                       type="color"
-                      value={colors.column6}
+                      value={colors.columns[5]}
                       className="w-12 h-10 p-1"
-                      onChange={(e) => handleColorChange("toc-column-6", e.target.value)}
+                      onChange={(e) => updateColor("column", e.target.value, 5)}
                     />
                     <div
                       className="flex-1 h-10 rounded flex items-center justify-center"
                       style={{
-                        backgroundColor: colors.column6,
-                        color: getTextColor(colors.column6),
+                        backgroundColor: colors.columns[5],
+                        color: getTextColor(colors.columns[5]),
                       }}
                     >
                       Preview
