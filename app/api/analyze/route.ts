@@ -104,16 +104,5 @@ export async function POST(req: Request) {
         { status: 500 },
       )
     }
-    \
   }
-  catch (error)
-  console.error("Error in API route:", error)
-  return NextResponse.json(
-    {
-      message: "Error processing your request",
-      error: error instanceof Error ? error.message : String(error),
-      errorType: "SERVER_ERROR",
-    },
-    { status: 500 },
-  )
 }
