@@ -14,10 +14,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Upload, Wand2, AlertCircle, RefreshCw } from "lucide-react"
+import { Loader2, Upload, Wand2, AlertCircle, RefreshCw, CreditCard, Info } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { APP_NAME } from "@/lib/env"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
 
 interface AiAssistantDialogProps {
   open: boolean
@@ -30,7 +31,9 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
   const [inputText, setInputText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState("")
+  const [modelUsed, setModelUsed] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [errorType, setErrorType] = useState<string | null>(null)
   const [diagnosticInfo, setDiagnosticInfo] = useState<any>(null)
   const [useMockApi, setUseMockApi] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -68,6 +71,7 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
 
     // Clear previous error state
     setError(null)
+    setErrorType(null)
 
     // In a real implementation, this would process the file
     // For now, we'll just show a toast
@@ -83,6 +87,7 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
       setAiSuggestions(
         "Based on the uploaded document, I recommend the following changes to your Theory of Change:\n\n1. Update your Need statement to focus more on the root causes identified in the document\n\n2. Add a new group for 'Stakeholder Engagement' with specific activities\n\n3. Refine your long-term outcomes to better align with the impact metrics mentioned in section 3.2",
       )
+      setModelUsed("simulation")
     }, 2000)
   }
 
@@ -99,7 +104,9 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
 
     // Clear previous error and suggestions
     setError(null)
+    setErrorType(null)
     setAiSuggestions("")
+    setModelUsed(null)
     setIsLoading(true)
 
     try {
@@ -118,10 +125,29 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
       const data = await response.json()
 
       if (!response.ok) {
-        const errorMessage = data.message || data.error || "Failed to analyze text"
         console.error("API error:", data)
 
-        // If real API fails, try the mock API as fallback
+        // Store the error type if available
+        if (data.errorType) {
+          setErrorType(data.errorType)
+        }
+
+        const errorMessage = data.error || data.message || "Failed to analyze text"
+
+        // If model access or quota exceeded, show specific message
+        if (data.errorType === "MODEL_ACCESS_OR_QUOTA") {
+          setError("OpenAI API model access issue or quota exceeded. You may not have access to the requested model.")
+          toast({
+            title: "Model Access Issue",
+            description:
+              "You may not have access to the requested model. Trying alternative models or use simulation mode.",
+            variant: "destructive",
+          })
+          setIsLoading(false)
+          return
+        }
+
+        // If real API fails for other reasons, try the mock API as fallback
         if (!useMockApi) {
           setUseMockApi(true)
           toast({
@@ -129,6 +155,7 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
             description: "The AI service is unavailable. Using simulated responses instead.",
           })
           // Retry with mock API
+          setIsLoading(false)
           return handleTextAnalysis()
         }
 
@@ -136,11 +163,17 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
       }
 
       setAiSuggestions(data.suggestions)
+      setModelUsed(data.modelUsed || (useMockApi ? "simulation" : "unknown"))
 
       if (useMockApi) {
         toast({
           title: "Using simulated AI",
           description: "These suggestions are simulated and not from the actual AI service.",
+        })
+      } else if (data.modelUsed) {
+        toast({
+          title: `Using ${data.modelUsed}`,
+          description: `Successfully generated suggestions using ${data.modelUsed}.`,
         })
       }
     } catch (error) {
@@ -164,15 +197,27 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
     })
   }
 
+  const switchToMockApi = () => {
+    setUseMockApi(true)
+    setError(null)
+    setErrorType(null)
+    toast({
+      title: "Switched to simulation mode",
+      description: "Now using simulated AI responses instead of the OpenAI API.",
+    })
+  }
+
   // Reset state when dialog opens/closes
   useEffect(() => {
     if (!open) {
       // Reset state when dialog closes
       setError(null)
+      setErrorType(null)
       setAiSuggestions("")
       setInputText("")
       setIsLoading(false)
       setDiagnosticInfo(null)
+      setModelUsed(null)
     }
   }, [open])
 
@@ -188,7 +233,35 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
           <DialogDescription>Get AI-powered suggestions to improve your Theory of Change diagram.</DialogDescription>
         </DialogHeader>
 
-        {error && (
+        {errorType === "MODEL_ACCESS_OR_QUOTA" && (
+          <Alert variant="destructive" className="mt-4">
+            <CreditCard className="h-4 w-4" />
+            <AlertTitle>OpenAI API Model Access Issue</AlertTitle>
+            <AlertDescription className="space-y-2">
+              <p>You may not have access to the requested model or have exceeded your quota. To fix this issue:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Check if your OpenAI account has access to the GPT-4o model</li>
+                <li>The app will automatically try other models (GPT-4, GPT-3.5-turbo)</li>
+                <li>Or use our simulation mode instead</li>
+              </ul>
+              <div className="flex gap-2 mt-2">
+                <Button size="sm" variant="outline" onClick={switchToMockApi} className="h-8">
+                  Use Simulation Mode
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => window.open("https://platform.openai.com/account/limits", "_blank")}
+                  className="h-8"
+                >
+                  Check OpenAI Access
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {error && errorType !== "MODEL_ACCESS_OR_QUOTA" && (
           <Alert variant="destructive" className="mt-4">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
@@ -199,6 +272,11 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
                   <RefreshCw className="h-3 w-3 mr-1" />
                   Run Diagnostics
                 </Button>
+                {!useMockApi && (
+                  <Button size="sm" variant="outline" onClick={switchToMockApi} className="h-8">
+                    Use Simulation Mode
+                  </Button>
+                )}
               </div>
             </AlertDescription>
           </Alert>
@@ -285,7 +363,15 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
 
         {aiSuggestions && (
           <div className="mt-4">
-            <h3 className="text-sm font-medium mb-2">{useMockApi ? "Simulated Suggestions:" : "AI Suggestions:"}</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium">{useMockApi ? "Simulated Suggestions:" : "AI Suggestions:"}</h3>
+              {modelUsed && (
+                <Badge variant="outline" className="text-xs">
+                  <Info className="h-3 w-3 mr-1" />
+                  {modelUsed === "simulation" ? "Simulation" : `Model: ${modelUsed}`}
+                </Badge>
+              )}
+            </div>
             <div className="bg-muted p-3 rounded-md text-sm whitespace-pre-line">{aiSuggestions}</div>
           </div>
         )}

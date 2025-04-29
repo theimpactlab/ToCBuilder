@@ -3,14 +3,16 @@
 import { useState } from "react"
 import { ModeToggle } from "./mode-toggle"
 import { Button } from "@/components/ui/button"
-import { Download, Upload, Save, Share2, Settings, FileText, Palette, FileDown } from "lucide-react"
+import { Download, Upload, Save, Share2, Settings, FileText, Palette, FileDown, HelpCircle } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ColorThemeDialog } from "./color-theme-dialog"
 import { PdfExportDialog } from "./pdf-export-dialog"
+import { OpenAIQuotaGuide } from "./openai-quota-guide"
 
 export function Navbar() {
   const [isColorDialogOpen, setIsColorDialogOpen] = useState(false)
   const [isPdfExportDialogOpen, setIsPdfExportDialogOpen] = useState(false)
+  const [isQuotaGuideOpen, setIsQuotaGuideOpen] = useState(false)
 
   return (
     <header className="border-b">
@@ -62,6 +64,10 @@ export function Navbar() {
                 <Palette className="h-4 w-4 mr-2" />
                 Color Theme
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsQuotaGuideOpen(true)}>
+                <HelpCircle className="h-4 w-4 mr-2" />
+                OpenAI API Help
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -71,6 +77,7 @@ export function Navbar() {
 
       <ColorThemeDialog open={isColorDialogOpen} onOpenChange={setIsColorDialogOpen} />
       <PdfExportDialog open={isPdfExportDialogOpen} onOpenChange={setIsPdfExportDialogOpen} />
+      <OpenAIQuotaGuide open={isQuotaGuideOpen} onOpenChange={setIsQuotaGuideOpen} />
     </header>
   )
 }

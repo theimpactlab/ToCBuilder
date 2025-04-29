@@ -16,15 +16,6 @@ export async function POST(req: Request) {
       )
     }
 
-    // Basic validation of API key format
-    if (!apiKey.startsWith("sk-") || apiKey.length < 20) {
-      console.error("OpenAI API key appears to be invalid")
-      return NextResponse.json(
-        { message: "OpenAI API key appears to be invalid. Please check your API key format." },
-        { status: 500 },
-      )
-    }
-
     const { text, documentContent } = await req.json()
 
     if (!text && !documentContent) {
@@ -33,80 +24,96 @@ export async function POST(req: Request) {
 
     const contentToAnalyze = text || documentContent
 
-    try {
-      // Create a simple test prompt first to validate the API key
-      const testPrompt = "Hello, this is a test. Please respond with 'API key is valid'."
+    // Define the prompt once to reuse
+    const prompt = `You are an expert in Theory of Change methodology for social impact organizations. 
+    Analyze the following text and provide specific suggestions to improve a Theory of Change diagram.
+    Focus on identifying: key needs, activities, outputs, outcomes, and impact.
+    Format your response as 3-5 specific, actionable recommendations.
+    
+    Text to analyze: ${contentToAnalyze}`
 
+    // Try with different models in order of preference
+    const models = ["gpt-4o", "gpt-4", "gpt-3.5-turbo"]
+    let lastError = null
+
+    for (const modelName of models) {
       try {
-        // Test the API key with a simple request
-        await generateText({
-          model: openai("gpt-3.5-turbo"), // Use a cheaper model for testing
-          prompt: testPrompt,
-          maxTokens: 10,
+        console.log(`Attempting to use model: ${modelName}`)
+
+        const { text: analysis } = await generateText({
+          model: openai(modelName),
+          prompt: prompt,
+          maxTokens: 500,
           apiKey: apiKey,
         })
-      } catch (testError) {
-        console.error("API key validation failed:", testError)
-        return NextResponse.json(
-          {
-            message: "OpenAI API key validation failed",
-            error: testError instanceof Error ? testError.message : String(testError),
-          },
-          { status: 500 },
-        )
-      }
 
-      // If we get here, the API key is valid, proceed with the actual analysis
-      const { text: analysis } = await generateText({
-        model: openai("gpt-4o"),
-        prompt: `You are an expert in Theory of Change methodology for social impact organizations. 
-        Analyze the following text and provide specific suggestions to improve a Theory of Change diagram.
-        Focus on identifying: key needs, activities, outputs, outcomes, and impact.
-        Format your response as 3-5 specific, actionable recommendations.
-        
-        Text to analyze: ${contentToAnalyze}`,
-        maxTokens: 500,
-        apiKey: apiKey,
-      })
+        console.log(`Successfully used model: ${modelName}`)
+        return NextResponse.json({
+          suggestions: analysis,
+          modelUsed: modelName,
+        })
+      } catch (modelError) {
+        console.error(`Error with model ${modelName}:`, modelError)
+        lastError = modelError
 
-      return NextResponse.json({ suggestions: analysis })
-    } catch (aiError) {
-      console.error("AI generation error:", aiError)
+        // If this is not an access/quota error, don't try other models
+        const errorMessage = modelError instanceof Error ? modelError.message : String(modelError)
+        if (!errorMessage.includes("quota") && !errorMessage.includes("access") && !errorMessage.includes("billing")) {
+          throw modelError
+        }
 
-      // Check for common OpenAI API errors
-      const errorMessage = aiError instanceof Error ? aiError.message : String(aiError)
-
-      if (errorMessage.includes("API key")) {
-        return NextResponse.json(
-          {
-            message: "Invalid OpenAI API key",
-            error: errorMessage,
-          },
-          { status: 500 },
-        )
-      } else if (errorMessage.includes("rate limit")) {
-        return NextResponse.json(
-          {
-            message: "OpenAI API rate limit exceeded",
-            error: errorMessage,
-          },
-          { status: 429 },
-        )
-      } else {
-        return NextResponse.json(
-          {
-            message: "Error generating AI response",
-            error: errorMessage,
-          },
-          { status: 500 },
-        )
+        // Otherwise continue to the next model
       }
     }
-  } catch (error) {
-    console.error("Error in API route:", error)
-    return NextResponse.json(
-      { message: "Error processing your request", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 },
-    )
+
+    // If we get here, all models failed
+    throw lastError || new Error("All models failed")
+  } catch (aiError) {
+    console.error("AI generation error:", aiError)
+
+    // Convert error to string for analysis
+    const errorMessage = aiError instanceof Error ? aiError.message : String(aiError)
+
+    // Check for quota exceeded error
+    if (errorMessage.includes("exceeded your current quota") || errorMessage.includes("billing details")) {
+      return NextResponse.json(
+        {
+          message: "OpenAI API quota exceeded or model access issue",
+          error:
+            "You may not have access to the requested model or have exceeded your quota. Please check your OpenAI account.",
+          errorType: "MODEL_ACCESS_OR_QUOTA",
+        },
+        { status: 429 },
+      )
+    } else if (errorMessage.includes("rate limit")) {
+      return NextResponse.json(
+        {
+          message: "OpenAI API rate limit exceeded",
+          error: "You have hit the rate limit for the OpenAI API. Please try again later or use simulation mode.",
+          errorType: "RATE_LIMIT",
+        },
+        { status: 429 },
+      )
+    } else {
+      return NextResponse.json(
+        {
+          message: "Error generating AI response",
+          error: errorMessage,
+          errorType: "GENERAL_ERROR",
+        },
+        { status: 500 },
+      )
+    }
+    \
   }
+  catch (error)
+  console.error("Error in API route:", error)
+  return NextResponse.json(
+    {
+      message: "Error processing your request",
+      error: error instanceof Error ? error.message : String(error),
+      errorType: "SERVER_ERROR",
+    },
+    { status: 500 },
+  )
 }
