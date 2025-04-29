@@ -68,11 +68,11 @@ export async function POST(req: Request) {
 
     // If we get here, all models failed
     throw lastError || new Error("All models failed")
-  } catch (aiError) {
-    console.error("AI generation error:", aiError)
+  } catch (error) {
+    console.error("AI generation error:", error)
 
     // Convert error to string for analysis
-    const errorMessage = aiError instanceof Error ? aiError.message : String(aiError)
+    const errorMessage = error instanceof Error ? error.message : String(error)
 
     // Check for quota exceeded error
     if (errorMessage.includes("exceeded your current quota") || errorMessage.includes("billing details")) {
