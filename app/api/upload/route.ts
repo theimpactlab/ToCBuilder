@@ -1,14 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
-import { getServerEnv } from "@/lib/env"
 
 export async function POST(req: NextRequest) {
   try {
-    const env = getServerEnv()
+    // Get the OpenAI API key directly from process.env
+    const apiKey = process.env.OPENAI_API_KEY
 
     // Check if OpenAI API key is available
-    if (!env.OPENAI_API_KEY) {
+    if (!apiKey) {
+      console.error("OpenAI API key is missing")
       return NextResponse.json(
         { message: "OpenAI API key is missing. Please add it to your environment variables." },
         { status: 500 },
@@ -40,23 +41,34 @@ Key activities include:
     
 Expected outcomes include improved literacy rates, higher graduation rates, and increased employment opportunities.`
 
-    // Use OpenAI to analyze the extracted text
-    const { text: analysis } = await generateText({
-      model: openai("gpt-4o"),
-      prompt: `You are an expert in Theory of Change methodology for social impact organizations. 
-      Analyze the following text extracted from a document and provide specific suggestions to improve a Theory of Change diagram.
-      Focus on identifying: key needs, activities, outputs, outcomes, and impact.
-      Format your response as 3-5 specific, actionable recommendations.
-      
-      Text from document: ${fileText}`,
-      maxTokens: 500,
-      apiKey: env.OPENAI_API_KEY,
-    })
+    try {
+      // Use OpenAI to analyze the extracted text
+      const { text: analysis } = await generateText({
+        model: openai("gpt-4o"),
+        prompt: `You are an expert in Theory of Change methodology for social impact organizations. 
+        Analyze the following text extracted from a document and provide specific suggestions to improve a Theory of Change diagram.
+        Focus on identifying: key needs, activities, outputs, outcomes, and impact.
+        Format your response as 3-5 specific, actionable recommendations.
+        
+        Text from document: ${fileText}`,
+        maxTokens: 500,
+        apiKey: apiKey,
+      })
 
-    return NextResponse.json({
-      success: true,
-      suggestions: analysis,
-    })
+      return NextResponse.json({
+        success: true,
+        suggestions: analysis,
+      })
+    } catch (aiError) {
+      console.error("AI generation error:", aiError)
+      return NextResponse.json(
+        {
+          error: "Failed to generate AI response",
+          message: aiError instanceof Error ? aiError.message : String(aiError),
+        },
+        { status: 500 },
+      )
+    }
   } catch (error) {
     console.error("Error processing file upload:", error)
     return NextResponse.json(

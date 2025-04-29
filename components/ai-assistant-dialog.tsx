@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 
 import { useState, useRef } from "react"
 import {
@@ -14,9 +14,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Upload, Wand2 } from "lucide-react"
+import { Loader2, Upload, Wand2, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { APP_NAME } from "@/lib/env"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface AiAssistantDialogProps {
   open: boolean
@@ -29,12 +30,16 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
   const [inputText, setInputText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState("")
+  const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+
+    // Clear previous error state
+    setError(null)
 
     // In a real implementation, this would process the file
     // For now, we'll just show a toast
@@ -64,6 +69,9 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
       return
     }
 
+    // Clear previous error and suggestions
+    setError(null)
+    setAiSuggestions("")
     setIsLoading(true)
 
     try {
@@ -76,15 +84,16 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
         body: JSON.stringify({ text: inputText }),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || "Failed to analyze text")
+        throw new Error(data.message || data.error || "Failed to analyze text")
       }
 
-      const data = await response.json()
       setAiSuggestions(data.suggestions)
     } catch (error) {
       console.error("Error generating AI suggestions:", error)
+      setError(error instanceof Error ? error.message : "Failed to generate AI suggestions")
       toast({
         title: "Error",
         description: "Failed to generate AI suggestions. Please check your API key and try again.",
@@ -103,6 +112,17 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
     })
   }
 
+  // Reset state when dialog opens/closes
+  React.useEffect(() => {
+    if (!open) {
+      // Reset state when dialog closes
+      setError(null)
+      setAiSuggestions("")
+      setInputText("")
+      setIsLoading(false)
+    }
+  }, [open])
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px]">
@@ -113,6 +133,14 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
           </DialogTitle>
           <DialogDescription>Get AI-powered suggestions to improve your Theory of Change diagram.</DialogDescription>
         </DialogHeader>
+
+        {error && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         <Tabs defaultValue="text" value={activeTab} onValueChange={setActiveTab} className="mt-4">
           <TabsList className="grid w-full grid-cols-2">
