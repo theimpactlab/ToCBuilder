@@ -1,7 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -123,6 +130,7 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Customize Color Theme</DialogTitle>
+          <DialogDescription>Customize the colors of your Theory of Change diagram.</DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="header" onValueChange={setActiveTab} value={activeTab}>

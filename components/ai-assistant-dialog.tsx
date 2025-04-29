@@ -3,14 +3,20 @@
 import type React from "react"
 
 import { useState, useRef } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, Upload, Wand2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
+import { APP_NAME } from "@/lib/env"
 
 interface AiAssistantDialogProps {
   open: boolean
@@ -47,6 +53,7 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
     }, 2000)
   }
 
+  // Update the handleTextAnalysis function to properly handle the API call
   const handleTextAnalysis = async () => {
     if (!inputText.trim()) {
       toast({
@@ -60,24 +67,27 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
     setIsLoading(true)
 
     try {
-      // Use the AI SDK with OpenAI instead of Grok
-      const { text } = await generateText({
-        model: openai("gpt-4o"),
-        prompt: `You are an expert in Theory of Change methodology for social impact organizations. 
-      Analyze the following text and provide specific suggestions to improve a Theory of Change diagram.
-      Focus on identifying: key needs, activities, outputs, outcomes, and impact.
-      Format your response as 3-5 specific, actionable recommendations.
-      
-      Text to analyze: ${inputText}`,
-        maxTokens: 500,
+      // Use the API route instead of direct client-side API calls
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: inputText }),
       })
 
-      setAiSuggestions(text)
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || "Failed to analyze text")
+      }
+
+      const data = await response.json()
+      setAiSuggestions(data.suggestions)
     } catch (error) {
       console.error("Error generating AI suggestions:", error)
       toast({
         title: "Error",
-        description: "Failed to generate AI suggestions. Please try again.",
+        description: "Failed to generate AI suggestions. Please check your API key and try again.",
         variant: "destructive",
       })
     } finally {
@@ -99,8 +109,9 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Wand2 className="h-5 w-5" />
-            AI Assistant
+            AI Assistant for {APP_NAME}
           </DialogTitle>
+          <DialogDescription>Get AI-powered suggestions to improve your Theory of Change diagram.</DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="text" value={activeTab} onValueChange={setActiveTab} className="mt-4">

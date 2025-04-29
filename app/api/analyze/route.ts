@@ -1,13 +1,24 @@
 import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
 import { NextResponse } from "next/server"
+import { getServerEnv } from "@/lib/env"
 
 export async function POST(req: Request) {
   try {
+    const env = getServerEnv()
+
+    // Check if OpenAI API key is available
+    if (!env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { message: "OpenAI API key is missing. Please add it to your environment variables." },
+        { status: 500 },
+      )
+    }
+
     const { text, documentContent } = await req.json()
 
     if (!text && !documentContent) {
-      return new Response("No content provided", { status: 400 })
+      return NextResponse.json({ message: "No content provided" }, { status: 400 })
     }
 
     const contentToAnalyze = text || documentContent
@@ -21,11 +32,15 @@ export async function POST(req: Request) {
       
       Text to analyze: ${contentToAnalyze}`,
       maxTokens: 500,
+      apiKey: env.OPENAI_API_KEY,
     })
 
     return NextResponse.json({ suggestions: analysis })
   } catch (error) {
     console.error("Error analyzing content:", error)
-    return new Response("Error processing your request", { status: 500 })
+    return NextResponse.json(
+      { message: "Error processing your request", error: error instanceof Error ? error.message : String(error) },
+      { status: 500 },
+    )
   }
 }

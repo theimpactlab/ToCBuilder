@@ -61,10 +61,10 @@
     "immer": "latest",
     "use-sync-external-store": "latest",
     "zustand": "latest",
-    "ai": "latest",
-    "@ai-sdk/openai": "latest",
     "html2canvas": "latest",
-    "jspdf": "latest"
+    "jspdf": "latest",
+    "ai": "latest",
+    "@ai-sdk/openai": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

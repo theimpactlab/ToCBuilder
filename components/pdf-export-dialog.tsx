@@ -1,7 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -54,6 +61,7 @@ export function PdfExportDialog({ open, onOpenChange }: PdfExportDialogProps) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Export as PDF</DialogTitle>
+          <DialogDescription>Export your Theory of Change diagram as a PDF document.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
