@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    /* Theory of Change Theme Colors */
+    --toc-header: 220 20% 40%;
+    --toc-need: 220 15% 40%;
+    --toc-vision: 220 15% 40%;
+    --toc-purpose: 220 15% 40%;
+    --toc-flow: 220 10% 90%;
+    --toc-grouping: 35 25% 90%;
+    --toc-inputs: 220 10% 90%;
+    --toc-activities: 220 10% 90%;
+    --toc-outputs: 220 10% 90%;
+    --toc-interim: 220 10% 90%;
+    --toc-longterm: 220 10% 90%;
+    --toc-impact: 220 10% 90%;
+    --toc-column-1: 220 15% 85%;
+    --toc-column-2: 220 15% 85%;
+    --toc-column-3: 220 15% 85%;
+    --toc-column-4: 220 15% 85%;
+    --toc-column-5: 220 15% 85%;
+    --toc-column-6: 220 15% 85%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    /* Theory of Change Theme Colors - Dark Mode */
+    --toc-header: 220 20% 30%;
+    --toc-need: 220 15% 30%;
+    --toc-vision: 220 15% 30%;
+    --toc-purpose: 220 15% 30%;
+    --toc-flow: 220 10% 25%;
+    --toc-grouping: 35 25% 25%;
+    --toc-inputs: 220 10% 25%;
+    --toc-activities: 220 10% 25%;
+    --toc-outputs: 220 10% 25%;
+    --toc-interim: 220 10% 25%;
+    --toc-longterm: 220 10% 25%;
+    --toc-impact: 220 10% 25%;
+    --toc-column-1: 220 15% 20%;
+    --toc-column-2: 220 15% 20%;
+    --toc-column-3: 220 15% 20%;
+    --toc-column-4: 220 15% 20%;
+    --toc-column-5: 220 15% 20%;
+    --toc-column-6: 220 15% 20%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.toc-header {
+  background-color: hsl(var(--toc-header));
+  color: white;
+}
+
+.toc-need,
+.toc-vision,
+.toc-purpose {
+  background-color: hsl(var(--toc-need));
+  color: white;
+}
+
+.toc-flow {
+  background-color: hsl(var(--toc-flow));
+}
+
+.toc-grouping {
+  background-color: hsl(var(--toc-grouping));
+}
+
+.toc-column-1 {
+  background-color: hsl(var(--toc-column-1));
+}
+
+.toc-column-2 {
+  background-color: hsl(var(--toc-column-2));
+}
+
+.toc-column-3 {
+  background-color: hsl(var(--toc-column-3));
+}
+
+.toc-column-4 {
+  background-color: hsl(var(--toc-column-4));
+}
+
+.toc-column-5 {
+  background-color: hsl(var(--toc-column-5));
+  color: white;
+}
+
+.toc-column-6 {
+  background-color: hsl(var(--toc-column-6));
+}
+
+.arrow-right {
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 15px solid #2c3e50;
+}
