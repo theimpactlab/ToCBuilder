@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import {
   Dialog,
   DialogContent,
@@ -92,7 +92,7 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
   }
 
   // Update the handleTextAnalysis function to properly handle the API call
-  const handleTextAnalysis = async () => {
+  const handleTextAnalysis = useCallback(async () => {
     if (!inputText.trim()) {
       toast({
         title: "Input required",
@@ -113,6 +113,10 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
       // Use either the real API or the mock API based on diagnostics
       const endpoint = useMockApi ? "/api/mock-analyze" : "/api/analyze"
 
+      // Create an AbortController to allow cancelling the request if needed
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
       // Use the API route instead of direct client-side API calls
       const response = await fetch(endpoint, {
         method: "POST",
@@ -120,7 +124,15 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ text: inputText }),
+        signal: controller.signal,
+      }).catch((err) => {
+        if (err.name === "AbortError") {
+          throw new Error("Request timed out. Please try again.")
+        }
+        throw err
       })
+
+      clearTimeout(timeoutId)
 
       const data = await response.json()
 
@@ -187,7 +199,7 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [inputText, toast, useMockApi])
 
   const handleApplySuggestions = () => {
     // In a real implementation, this would parse the AI suggestions

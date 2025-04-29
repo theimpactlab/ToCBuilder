@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { cn } from "@/lib/utils"
 
 interface EditableBoxProps {
@@ -57,16 +57,24 @@ export function EditableBox({
     onChange(text)
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setText(e.target.value)
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setText(e.target.value)
 
-    // Adjust height for textarea
-    if (multiline && e.target instanceof HTMLTextAreaElement) {
-      e.target.style.height = "auto"
-      e.target.style.height = `${e.target.scrollHeight}px`
-      onHeightChange?.(e.target.scrollHeight)
-    }
-  }
+      // Adjust height for textarea
+      if (multiline && e.target instanceof HTMLTextAreaElement) {
+        // Use requestAnimationFrame for smoother height adjustments
+        requestAnimationFrame(() => {
+          if (e.target) {
+            e.target.style.height = "auto"
+            e.target.style.height = `${e.target.scrollHeight}px`
+            onHeightChange?.(e.target.scrollHeight)
+          }
+        })
+      }
+    },
+    [multiline, onHeightChange],
+  )
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !multiline) {

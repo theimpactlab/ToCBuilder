@@ -72,6 +72,7 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
     return luminance > 0.5 ? "#000000" : "#ffffff"
   }
 
+  // Modify the handleColorChange function to be more efficient
   const handleColorChange = (variable: string, value: string) => {
     // Update the state
     if (variable === "toc-header") {
@@ -96,15 +97,18 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
       setColors((prev) => ({ ...prev, column6: value }))
     }
 
-    // Set the background color CSS variable
-    document.documentElement.style.setProperty(`--${variable}-bg`, value)
+    // Use requestAnimationFrame to batch CSS updates for better performance
+    requestAnimationFrame(() => {
+      // Set the background color CSS variable
+      document.documentElement.style.setProperty(`--${variable}-bg`, value)
 
-    // Set the text color CSS variable based on the background color
-    const textColor = getTextColor(value)
-    document.documentElement.style.setProperty(`--${variable}-text`, textColor)
+      // Set the text color CSS variable based on the background color
+      const textColor = getTextColor(value)
+      document.documentElement.style.setProperty(`--${variable}-text`, textColor)
+    })
   }
 
-  // Function to update all column colors at once
+  // Also optimize the updateAllColumnColors function
   const updateAllColumnColors = (value: string) => {
     // Update state for all columns
     setColors((prev) => ({
@@ -117,12 +121,15 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
       column6: value,
     }))
 
-    // Update CSS variables for all columns
-    const textColor = getTextColor(value)
-    for (let i = 1; i <= 6; i++) {
-      document.documentElement.style.setProperty(`--toc-column-${i}-bg`, value)
-      document.documentElement.style.setProperty(`--toc-column-${i}-text`, textColor)
-    }
+    // Use requestAnimationFrame to batch CSS updates
+    requestAnimationFrame(() => {
+      // Update CSS variables for all columns
+      const textColor = getTextColor(value)
+      for (let i = 1; i <= 6; i++) {
+        document.documentElement.style.setProperty(`--toc-column-${i}-bg`, value)
+        document.documentElement.style.setProperty(`--toc-column-${i}-text`, textColor)
+      }
+    })
   }
 
   return (
