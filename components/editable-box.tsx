@@ -11,6 +11,7 @@ interface EditableBoxProps {
   placeholder?: string
   className?: string
   multiline?: boolean
+  onHeightChange?: (height: number) => void
 }
 
 export function EditableBox({
@@ -19,10 +20,12 @@ export function EditableBox({
   placeholder = "Click to edit...",
   className,
   multiline = false,
+  onHeightChange,
 }: EditableBoxProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [text, setText] = useState(value)
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     setText(value)
@@ -33,6 +36,16 @@ export function EditableBox({
       inputRef.current.focus()
     }
   }, [isEditing])
+
+  useEffect(() => {
+    if (multiline && textareaRef.current && onHeightChange) {
+      // Reset height to auto to get the correct scrollHeight
+      textareaRef.current.style.height = "auto"
+      const scrollHeight = textareaRef.current.scrollHeight
+      textareaRef.current.style.height = `${scrollHeight}px`
+      onHeightChange(scrollHeight)
+    }
+  }, [text, multiline, onHeightChange])
 
   const handleClick = () => {
     setIsEditing(true)
@@ -45,6 +58,13 @@ export function EditableBox({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setText(e.target.value)
+
+    // Adjust height for textarea
+    if (multiline && e.target instanceof HTMLTextAreaElement) {
+      e.target.style.height = "auto"
+      e.target.style.height = `${e.target.scrollHeight}px`
+      onHeightChange?.(e.target.scrollHeight)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -59,11 +79,11 @@ export function EditableBox({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       {isEditing ? (
         multiline ? (
           <textarea
-            ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+            ref={textareaRef}
             value={text}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -74,6 +94,7 @@ export function EditableBox({
             )}
             rows={3}
             placeholder={placeholder}
+            style={{ overflow: "hidden", height: "auto", minHeight: "100%" }}
           />
         ) : (
           <input
@@ -90,7 +111,7 @@ export function EditableBox({
       ) : (
         <div
           onClick={handleClick}
-          className={cn("w-full min-h-[24px] cursor-text", !text && "text-gray-400", className)}
+          className={cn("w-full h-full min-h-[24px] cursor-text", !text && "text-gray-400", className)}
         >
           {text || placeholder}
         </div>

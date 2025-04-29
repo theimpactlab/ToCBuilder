@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { EditableBox } from "./editable-box"
 import { FlowArrow } from "./flow-arrow"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,7 @@ export default function TheoryOfChangeBuilder() {
   const [showGroupingColumn, setShowGroupingColumn] = useState(false)
   const [groups, setGroups] = useState([{ id: 1, name: "Grouping" }])
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [rowHeights, setRowHeights] = useState<Record<number, number>>({})
 
   const [headerData, setHeaderData] = useState({
     title: "Theory of Change Template",
@@ -40,6 +41,15 @@ export default function TheoryOfChangeBuilder() {
     longerTermOutcomes: Array(1).fill(""),
     impact: Array(1).fill(""),
   })
+
+  // Function to update row heights
+  const updateRowHeight = (rowIndex: number, height: number) => {
+    setRowHeights((prev) => {
+      const newHeights = { ...prev }
+      newHeights[rowIndex] = Math.max(height, prev[rowIndex] || 150)
+      return newHeights
+    })
+  }
 
   const handleLogoChange = (newLogoUrl: string | null) => {
     setLogoUrl(newLogoUrl)
@@ -77,6 +87,21 @@ export default function TheoryOfChangeBuilder() {
       longerTermOutcomes: columns.longerTermOutcomes.filter((_, i) => i !== index),
       impact: columns.impact.filter((_, i) => i !== index),
     })
+
+    // Update row heights
+    const newRowHeights = { ...rowHeights }
+    delete newRowHeights[index]
+
+    // Shift all heights for rows after the deleted one
+    Object.keys(newRowHeights).forEach((key) => {
+      const keyNum = Number.parseInt(key)
+      if (keyNum > index) {
+        newRowHeights[keyNum - 1] = newRowHeights[keyNum]
+        delete newRowHeights[keyNum]
+      }
+    })
+
+    setRowHeights(newRowHeights)
   }
 
   const updateGroupName = (id: number, name: string) => {
@@ -106,6 +131,15 @@ export default function TheoryOfChangeBuilder() {
   const toggleGroupingColumn = () => {
     setShowGroupingColumn(!showGroupingColumn)
   }
+
+  // Reset row heights when columns change
+  useEffect(() => {
+    const newRowHeights: Record<number, number> = {}
+    groups.forEach((_, index) => {
+      newRowHeights[index] = rowHeights[index] || 150
+    })
+    setRowHeights(newRowHeights)
+  }, [groups.length])
 
   return (
     <div className="space-y-6">
@@ -243,7 +277,8 @@ export default function TheoryOfChangeBuilder() {
               {groups.map((group, index) => (
                 <div
                   key={group.id}
-                  className="relative toc-grouping p-4 rounded-md h-[150px] flex items-center justify-center"
+                  className="relative toc-grouping p-4 rounded-md flex items-center justify-center"
+                  style={{ height: `${rowHeights[index] || 150}px` }}
                 >
                   <EditableBox
                     value={group.name}
@@ -270,13 +305,18 @@ export default function TheoryOfChangeBuilder() {
           {/* Inputs/Resources Column */}
           <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} mr-2 space-y-2`}>
             {groups.map((group, index) => (
-              <div key={`input-${group.id}`} className="toc-column-1 p-4 rounded-md h-[150px]">
+              <div
+                key={`input-${group.id}`}
+                className="toc-column-1 p-4 rounded-md"
+                style={{ height: `${rowHeights[index] || 150}px` }}
+              >
                 <EditableBox
                   value={columns.inputs[index] || ""}
                   onChange={(value) => updateColumnContent("inputs", index, value)}
                   placeholder="Enter resources..."
-                  className="bg-transparent min-h-[130px]"
+                  className="bg-transparent h-full"
                   multiline
+                  onHeightChange={(height) => updateRowHeight(index, height + 32)} // 32px for padding
                 />
               </div>
             ))}
@@ -291,13 +331,18 @@ export default function TheoryOfChangeBuilder() {
           {/* Activities Column */}
           <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} mr-2 space-y-2`}>
             {groups.map((group, index) => (
-              <div key={`activity-${group.id}`} className="toc-column-2 p-4 rounded-md h-[150px]">
+              <div
+                key={`activity-${group.id}`}
+                className="toc-column-2 p-4 rounded-md"
+                style={{ height: `${rowHeights[index] || 150}px` }}
+              >
                 <EditableBox
                   value={columns.activities[index] || ""}
                   onChange={(value) => updateColumnContent("activities", index, value)}
                   placeholder="Enter activities..."
-                  className="bg-transparent min-h-[130px]"
+                  className="bg-transparent h-full"
                   multiline
+                  onHeightChange={(height) => updateRowHeight(index, height + 32)}
                 />
               </div>
             ))}
@@ -316,13 +361,18 @@ export default function TheoryOfChangeBuilder() {
           {/* Outputs Column */}
           <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} mr-2 space-y-2`}>
             {groups.map((group, index) => (
-              <div key={`output-${group.id}`} className="toc-column-3 p-4 rounded-md h-[150px]">
+              <div
+                key={`output-${group.id}`}
+                className="toc-column-3 p-4 rounded-md"
+                style={{ height: `${rowHeights[index] || 150}px` }}
+              >
                 <EditableBox
                   value={columns.outputs[index] || ""}
                   onChange={(value) => updateColumnContent("outputs", index, value)}
                   placeholder="Enter outputs..."
-                  className="bg-transparent min-h-[130px]"
+                  className="bg-transparent h-full"
                   multiline
+                  onHeightChange={(height) => updateRowHeight(index, height + 32)}
                 />
               </div>
             ))}
@@ -331,13 +381,18 @@ export default function TheoryOfChangeBuilder() {
           {/* Interim Outcomes Column */}
           <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} mr-2 space-y-2`}>
             {groups.map((group, index) => (
-              <div key={`interim-${group.id}`} className="toc-column-4 p-4 rounded-md h-[150px]">
+              <div
+                key={`interim-${group.id}`}
+                className="toc-column-4 p-4 rounded-md"
+                style={{ height: `${rowHeights[index] || 150}px` }}
+              >
                 <EditableBox
                   value={columns.interimOutcomes[index] || ""}
                   onChange={(value) => updateColumnContent("interimOutcomes", index, value)}
                   placeholder="Enter interim outcomes..."
-                  className="bg-transparent min-h-[130px]"
+                  className="bg-transparent h-full"
                   multiline
+                  onHeightChange={(height) => updateRowHeight(index, height + 32)}
                 />
               </div>
             ))}
@@ -346,13 +401,18 @@ export default function TheoryOfChangeBuilder() {
           {/* Longer Term Outcomes Column */}
           <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} mr-2 space-y-2`}>
             {groups.map((group, index) => (
-              <div key={`longterm-${group.id}`} className="toc-column-5 p-4 rounded-md h-[150px]">
+              <div
+                key={`longterm-${group.id}`}
+                className="toc-column-5 p-4 rounded-md"
+                style={{ height: `${rowHeights[index] || 150}px` }}
+              >
                 <EditableBox
                   value={columns.longerTermOutcomes[index] || ""}
                   onChange={(value) => updateColumnContent("longerTermOutcomes", index, value)}
                   placeholder="Enter long-term outcomes..."
-                  className="bg-transparent min-h-[130px]"
+                  className="bg-transparent h-full"
                   multiline
+                  onHeightChange={(height) => updateRowHeight(index, height + 32)}
                 />
               </div>
             ))}
@@ -361,13 +421,18 @@ export default function TheoryOfChangeBuilder() {
           {/* Impact Column */}
           <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} space-y-2`}>
             {groups.map((group, index) => (
-              <div key={`impact-${group.id}`} className="toc-column-6 p-4 rounded-md h-[150px]">
+              <div
+                key={`impact-${group.id}`}
+                className="toc-column-6 p-4 rounded-md"
+                style={{ height: `${rowHeights[index] || 150}px` }}
+              >
                 <EditableBox
                   value={columns.impact[index] || ""}
                   onChange={(value) => updateColumnContent("impact", index, value)}
                   placeholder="Enter impact..."
-                  className="bg-transparent min-h-[130px]"
+                  className="bg-transparent h-full"
                   multiline
+                  onHeightChange={(height) => updateRowHeight(index, height + 32)}
                 />
               </div>
             ))}

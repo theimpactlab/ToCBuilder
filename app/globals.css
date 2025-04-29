@@ -127,6 +127,12 @@
   color: white;
 }
 
+.dark .toc-need,
+.dark .toc-vision,
+.dark .toc-purpose {
+  color: white;
+}
+
 .toc-flow {
   background-color: hsl(var(--toc-flow));
 }
@@ -153,7 +159,6 @@
 
 .toc-column-5 {
   background-color: hsl(var(--toc-column-5));
-  color: white;
 }
 
 .toc-column-6 {

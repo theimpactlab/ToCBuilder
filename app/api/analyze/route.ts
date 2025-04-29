@@ -1,5 +1,5 @@
 import { generateText } from "ai"
-import { xai } from "@ai-sdk/xai"
+import { openai } from "@ai-sdk/openai"
 import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     const contentToAnalyze = text || documentContent
 
     const { text: analysis } = await generateText({
-      model: xai("grok-1"),
+      model: openai("gpt-4o"),
       prompt: `You are an expert in Theory of Change methodology for social impact organizations. 
       Analyze the following text and provide specific suggestions to improve a Theory of Change diagram.
       Focus on identifying: key needs, activities, outputs, outcomes, and impact.

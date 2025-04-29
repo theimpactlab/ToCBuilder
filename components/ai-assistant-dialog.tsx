@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Loader2, Upload, Wand2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { generateText } from "ai"
-import { xai } from "@ai-sdk/xai"
+import { openai } from "@ai-sdk/openai"
 
 interface AiAssistantDialogProps {
   open: boolean
@@ -60,15 +60,15 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
     setIsLoading(true)
 
     try {
-      // Use the AI SDK with Grok to generate suggestions
+      // Use the AI SDK with OpenAI instead of Grok
       const { text } = await generateText({
-        model: xai("grok-1"),
+        model: openai("gpt-4o"),
         prompt: `You are an expert in Theory of Change methodology for social impact organizations. 
-        Analyze the following text and provide specific suggestions to improve a Theory of Change diagram.
-        Focus on identifying: key needs, activities, outputs, outcomes, and impact.
-        Format your response as 3-5 specific, actionable recommendations.
-        
-        Text to analyze: ${inputText}`,
+      Analyze the following text and provide specific suggestions to improve a Theory of Change diagram.
+      Focus on identifying: key needs, activities, outputs, outcomes, and impact.
+      Format your response as 3-5 specific, actionable recommendations.
+      
+      Text to analyze: ${inputText}`,
         maxTokens: 500,
       })
 

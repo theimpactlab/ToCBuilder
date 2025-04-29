@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateText } from "ai"
-import { xai } from "@ai-sdk/xai"
+import { openai } from "@ai-sdk/openai"
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,9 +29,9 @@ Key activities include:
     
 Expected outcomes include improved literacy rates, higher graduation rates, and increased employment opportunities.`
 
-    // Use Grok to analyze the extracted text
+    // Use OpenAI to analyze the extracted text
     const { text: analysis } = await generateText({
-      model: xai("grok-1"),
+      model: openai("gpt-4o"),
       prompt: `You are an expert in Theory of Change methodology for social impact organizations. 
       Analyze the following text extracted from a document and provide specific suggestions to improve a Theory of Change diagram.
       Focus on identifying: key needs, activities, outputs, outcomes, and impact.
