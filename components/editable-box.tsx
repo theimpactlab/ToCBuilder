@@ -26,6 +26,7 @@ export function EditableBox({
   const [text, setText] = useState(value)
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setText(value)
@@ -78,8 +79,17 @@ export function EditableBox({
     }
   }
 
+  // Get the computed text color from the parent to use in the input/textarea
+  const getTextColor = () => {
+    if (containerRef.current) {
+      const computedStyle = window.getComputedStyle(containerRef.current)
+      return computedStyle.color
+    }
+    return "inherit"
+  }
+
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full" ref={containerRef}>
       {isEditing ? (
         multiline ? (
           <textarea
@@ -89,12 +99,17 @@ export function EditableBox({
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             className={cn(
-              "w-full p-1 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500",
+              "w-full h-full p-1 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500",
               className,
             )}
             rows={3}
             placeholder={placeholder}
-            style={{ overflow: "hidden", height: "auto", minHeight: "100%" }}
+            style={{
+              overflow: "hidden",
+              minHeight: "100%",
+              backgroundColor: "transparent",
+              color: "inherit",
+            }}
           />
         ) : (
           <input
@@ -106,12 +121,16 @@ export function EditableBox({
             onKeyDown={handleKeyDown}
             className={cn("w-full p-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500", className)}
             placeholder={placeholder}
+            style={{
+              backgroundColor: "transparent",
+              color: "inherit",
+            }}
           />
         )
       ) : (
         <div
           onClick={handleClick}
-          className={cn("w-full h-full min-h-[24px] cursor-text", !text && "text-gray-400", className)}
+          className={cn("w-full h-full min-h-[24px] cursor-text overflow-auto", !text && "opacity-70", className)}
         >
           {text || placeholder}
         </div>

@@ -34,25 +34,29 @@
 
     --radius: 0.5rem;
 
-    /* Theory of Change Theme Colors */
-    --toc-header: 220 20% 40%;
-    --toc-need: 220 15% 40%;
-    --toc-vision: 220 15% 40%;
-    --toc-purpose: 220 15% 40%;
-    --toc-flow: 220 10% 90%;
-    --toc-grouping: 35 25% 90%;
-    --toc-inputs: 220 10% 90%;
-    --toc-activities: 220 10% 90%;
-    --toc-outputs: 220 10% 90%;
-    --toc-interim: 220 10% 90%;
-    --toc-longterm: 220 10% 90%;
-    --toc-impact: 220 10% 90%;
-    --toc-column-1: 220 15% 85%;
-    --toc-column-2: 220 15% 85%;
-    --toc-column-3: 220 15% 85%;
-    --toc-column-4: 220 15% 85%;
-    --toc-column-5: 220 15% 85%;
-    --toc-column-6: 220 15% 85%;
+    /* Theory of Change Theme Colors - Background */
+    --toc-header-bg: #475569;
+    --toc-need-bg: #475569;
+    --toc-flow-bg: #f1f5f9;
+    --toc-grouping-bg: #f5f5dc;
+    --toc-column-1-bg: #e2e8f0;
+    --toc-column-2-bg: #e2e8f0;
+    --toc-column-3-bg: #e2e8f0;
+    --toc-column-4-bg: #e2e8f0;
+    --toc-column-5-bg: #e2e8f0; /* Changed from #475569 to match other columns */
+    --toc-column-6-bg: #e2e8f0;
+
+    /* Theory of Change Theme Colors - Text */
+    --toc-header-text: #ffffff;
+    --toc-need-text: #ffffff;
+    --toc-flow-text: #000000;
+    --toc-grouping-text: #000000;
+    --toc-column-1-text: #000000;
+    --toc-column-2-text: #000000;
+    --toc-column-3-text: #000000;
+    --toc-column-4-text: #000000;
+    --toc-column-5-text: #000000; /* Changed from #ffffff to match other columns */
+    --toc-column-6-text: #000000;
   }
 
   .dark {
@@ -84,25 +88,29 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
 
-    /* Theory of Change Theme Colors - Dark Mode */
-    --toc-header: 220 20% 30%;
-    --toc-need: 220 15% 30%;
-    --toc-vision: 220 15% 30%;
-    --toc-purpose: 220 15% 30%;
-    --toc-flow: 220 10% 25%;
-    --toc-grouping: 35 25% 25%;
-    --toc-inputs: 220 10% 25%;
-    --toc-activities: 220 10% 25%;
-    --toc-outputs: 220 10% 25%;
-    --toc-interim: 220 10% 25%;
-    --toc-longterm: 220 10% 25%;
-    --toc-impact: 220 10% 25%;
-    --toc-column-1: 220 15% 20%;
-    --toc-column-2: 220 15% 20%;
-    --toc-column-3: 220 15% 20%;
-    --toc-column-4: 220 15% 20%;
-    --toc-column-5: 220 15% 20%;
-    --toc-column-6: 220 15% 20%;
+    /* Theory of Change Theme Colors - Dark Mode - Background */
+    --toc-header-bg: #1e293b;
+    --toc-need-bg: #1e293b;
+    --toc-flow-bg: #334155;
+    --toc-grouping-bg: #3d3522;
+    --toc-column-1-bg: #1e293b;
+    --toc-column-2-bg: #1e293b;
+    --toc-column-3-bg: #1e293b;
+    --toc-column-4-bg: #1e293b;
+    --toc-column-5-bg: #1e293b;
+    --toc-column-6-bg: #1e293b;
+
+    /* Theory of Change Theme Colors - Dark Mode - Text */
+    --toc-header-text: #ffffff;
+    --toc-need-text: #ffffff;
+    --toc-flow-text: #ffffff;
+    --toc-grouping-text: #ffffff;
+    --toc-column-1-text: #ffffff;
+    --toc-column-2-text: #ffffff;
+    --toc-column-3-text: #ffffff;
+    --toc-column-4-text: #ffffff;
+    --toc-column-5-text: #ffffff;
+    --toc-column-6-text: #ffffff;
   }
 }
 
@@ -116,53 +124,55 @@
 }
 
 .toc-header {
-  background-color: hsl(var(--toc-header));
-  color: white;
+  background-color: var(--toc-header-bg);
+  color: var(--toc-header-text);
 }
 
 .toc-need,
 .toc-vision,
 .toc-purpose {
-  background-color: hsl(var(--toc-need));
-  color: white;
-}
-
-.dark .toc-need,
-.dark .toc-vision,
-.dark .toc-purpose {
-  color: white;
+  background-color: var(--toc-need-bg);
+  color: var(--toc-need-text);
 }
 
 .toc-flow {
-  background-color: hsl(var(--toc-flow));
+  background-color: var(--toc-flow-bg);
+  color: var(--toc-flow-text);
 }
 
 .toc-grouping {
-  background-color: hsl(var(--toc-grouping));
+  background-color: var(--toc-grouping-bg);
+  color: var(--toc-grouping-text);
 }
 
 .toc-column-1 {
-  background-color: hsl(var(--toc-column-1));
+  background-color: var(--toc-column-1-bg);
+  color: var(--toc-column-1-text);
 }
 
 .toc-column-2 {
-  background-color: hsl(var(--toc-column-2));
+  background-color: var(--toc-column-2-bg);
+  color: var(--toc-column-2-text);
 }
 
 .toc-column-3 {
-  background-color: hsl(var(--toc-column-3));
+  background-color: var(--toc-column-3-bg);
+  color: var(--toc-column-3-text);
 }
 
 .toc-column-4 {
-  background-color: hsl(var(--toc-column-4));
+  background-color: var(--toc-column-4-bg);
+  color: var(--toc-column-4-text);
 }
 
 .toc-column-5 {
-  background-color: hsl(var(--toc-column-5));
+  background-color: var(--toc-column-5-bg);
+  color: var(--toc-column-5-text);
 }
 
 .toc-column-6 {
-  background-color: hsl(var(--toc-column-6));
+  background-color: var(--toc-column-6-bg);
+  color: var(--toc-column-6-text);
 }
 
 .arrow-right {

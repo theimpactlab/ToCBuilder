@@ -3,12 +3,14 @@
 import { useState } from "react"
 import { ModeToggle } from "./mode-toggle"
 import { Button } from "@/components/ui/button"
-import { Download, Upload, Save, Share2, Settings, FileText, Palette } from "lucide-react"
+import { Download, Upload, Save, Share2, Settings, FileText, Palette, FileDown } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ColorThemeDialog } from "./color-theme-dialog"
+import { PdfExportDialog } from "./pdf-export-dialog"
 
 export function Navbar() {
   const [isColorDialogOpen, setIsColorDialogOpen] = useState(false)
+  const [isPdfExportDialogOpen, setIsPdfExportDialogOpen] = useState(false)
 
   return (
     <header className="border-b">
@@ -24,10 +26,20 @@ export function Navbar() {
             Import
           </Button>
 
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setIsPdfExportDialogOpen(true)}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Export as PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button variant="outline" size="sm">
             <Save className="h-4 w-4 mr-2" />
@@ -58,6 +70,7 @@ export function Navbar() {
       </div>
 
       <ColorThemeDialog open={isColorDialogOpen} onOpenChange={setIsColorDialogOpen} />
+      <PdfExportDialog open={isPdfExportDialogOpen} onOpenChange={setIsPdfExportDialogOpen} />
     </header>
   )
 }

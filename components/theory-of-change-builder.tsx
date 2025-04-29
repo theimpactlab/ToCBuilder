@@ -157,7 +157,8 @@ export default function TheoryOfChangeBuilder() {
         </div>
       </div>
 
-      <div className="border rounded-lg p-6 bg-white dark:bg-gray-950">
+      {/* Add id="toc-diagram" to the diagram container for PDF export */}
+      <div id="toc-diagram" className="border rounded-lg p-6 bg-white dark:bg-gray-950">
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="toc-header text-2xl font-bold p-4 rounded-md w-1/3">
@@ -174,98 +175,109 @@ export default function TheoryOfChangeBuilder() {
 
         {/* Need, Vision, Purpose */}
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="toc-need p-4 rounded-md">
+          <div className="toc-need p-4 rounded-md flex flex-col h-[180px]">
             <EditableBox
               value={headerData.need}
               onChange={(value) => setHeaderData({ ...headerData, need: value })}
               className="bg-transparent text-white font-semibold mb-2"
             />
-            <EditableBox
-              value=""
-              placeholder="Enter need details here..."
-              onChange={() => {}}
-              className="bg-transparent text-white min-h-[80px]"
-              multiline
-            />
+            <div className="flex-1">
+              <EditableBox
+                value=""
+                placeholder="Enter need details here..."
+                onChange={() => {}}
+                className="bg-transparent text-white h-full"
+                multiline
+              />
+            </div>
           </div>
-          <div className="toc-vision p-4 rounded-md">
+          <div className="toc-vision p-4 rounded-md flex flex-col h-[180px]">
             <EditableBox
               value={headerData.vision}
               onChange={(value) => setHeaderData({ ...headerData, vision: value })}
               className="bg-transparent text-white font-semibold mb-2"
             />
-            <EditableBox
-              value=""
-              placeholder="Enter vision details here..."
-              onChange={() => {}}
-              className="bg-transparent text-white min-h-[80px]"
-              multiline
-            />
+            <div className="flex-1">
+              <EditableBox
+                value=""
+                placeholder="Enter vision details here..."
+                onChange={() => {}}
+                className="bg-transparent text-white h-full"
+                multiline
+              />
+            </div>
           </div>
-          <div className="toc-purpose p-4 rounded-md">
+          <div className="toc-purpose p-4 rounded-md flex flex-col h-[180px]">
             <EditableBox
               value={headerData.purpose}
               onChange={(value) => setHeaderData({ ...headerData, purpose: value })}
               className="bg-transparent text-white font-semibold mb-2"
             />
-            <EditableBox
-              value=""
-              placeholder="Enter purpose details here..."
-              onChange={() => {}}
-              className="bg-transparent text-white min-h-[80px]"
-              multiline
-            />
+            <div className="flex-1">
+              <EditableBox
+                value=""
+                placeholder="Enter purpose details here..."
+                onChange={() => {}}
+                className="bg-transparent text-white h-full"
+                multiline
+              />
+            </div>
           </div>
         </div>
 
         {/* Flow Diagram */}
         <div className="flex items-center justify-between mb-6">
-          <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
-            <EditableBox
-              value={flowData.inputs}
-              onChange={(value) => setFlowData({ ...flowData, inputs: value })}
-              className="bg-transparent text-center"
-            />
-          </div>
-          <FlowArrow />
-          <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
-            <EditableBox
-              value={flowData.activities}
-              onChange={(value) => setFlowData({ ...flowData, activities: value })}
-              className="bg-transparent text-center"
-            />
-          </div>
-          <FlowArrow />
-          <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
-            <EditableBox
-              value={flowData.outputs}
-              onChange={(value) => setFlowData({ ...flowData, outputs: value })}
-              className="bg-transparent text-center"
-            />
-          </div>
-          <FlowArrow />
-          <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
-            <EditableBox
-              value={flowData.interimOutcomes}
-              onChange={(value) => setFlowData({ ...flowData, interimOutcomes: value })}
-              className="bg-transparent text-center"
-            />
-          </div>
-          <FlowArrow />
-          <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
-            <EditableBox
-              value={flowData.longerTermOutcomes}
-              onChange={(value) => setFlowData({ ...flowData, longerTermOutcomes: value })}
-              className="bg-transparent text-center"
-            />
-          </div>
-          <FlowArrow />
-          <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
-            <EditableBox
-              value={flowData.impact}
-              onChange={(value) => setFlowData({ ...flowData, impact: value })}
-              className="bg-transparent text-center"
-            />
+          {/* Add empty space for grouping column when visible */}
+          {showGroupingColumn && <div className="w-[14%] mr-2"></div>}
+
+          <div className={`flex items-center justify-between ${showGroupingColumn ? "w-[86%]" : "w-full"}`}>
+            <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
+              <EditableBox
+                value={flowData.inputs}
+                onChange={(value) => setFlowData({ ...flowData, inputs: value })}
+                className="bg-transparent text-center"
+              />
+            </div>
+            <FlowArrow />
+            <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
+              <EditableBox
+                value={flowData.activities}
+                onChange={(value) => setFlowData({ ...flowData, activities: value })}
+                className="bg-transparent text-center"
+              />
+            </div>
+            <FlowArrow />
+            <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
+              <EditableBox
+                value={flowData.outputs}
+                onChange={(value) => setFlowData({ ...flowData, outputs: value })}
+                className="bg-transparent text-center"
+              />
+            </div>
+            <FlowArrow />
+            <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
+              <EditableBox
+                value={flowData.interimOutcomes}
+                onChange={(value) => setFlowData({ ...flowData, interimOutcomes: value })}
+                className="bg-transparent text-center"
+              />
+            </div>
+            <FlowArrow />
+            <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
+              <EditableBox
+                value={flowData.longerTermOutcomes}
+                onChange={(value) => setFlowData({ ...flowData, longerTermOutcomes: value })}
+                className="bg-transparent text-center"
+              />
+            </div>
+            <FlowArrow />
+            <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
+              <EditableBox
+                value={flowData.impact}
+                onChange={(value) => setFlowData({ ...flowData, impact: value })}
+                className="bg-transparent text-center"
+              />
+            </div>
           </div>
         </div>
 
@@ -302,140 +314,142 @@ export default function TheoryOfChangeBuilder() {
             </div>
           )}
 
-          {/* Inputs/Resources Column */}
-          <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} mr-2 space-y-2`}>
-            {groups.map((group, index) => (
-              <div
-                key={`input-${group.id}`}
-                className="toc-column-1 p-4 rounded-md"
-                style={{ height: `${rowHeights[index] || 150}px` }}
-              >
-                <EditableBox
-                  value={columns.inputs[index] || ""}
-                  onChange={(value) => updateColumnContent("inputs", index, value)}
-                  placeholder="Enter resources..."
-                  className="bg-transparent h-full"
-                  multiline
-                  onHeightChange={(height) => updateRowHeight(index, height + 32)} // 32px for padding
-                />
-              </div>
-            ))}
-            {!showGroupingColumn && (
-              <Button variant="outline" className="w-full flex items-center justify-center gap-2" onClick={addGroup}>
-                <PlusCircle className="h-4 w-4" />
-                Add Row
-              </Button>
-            )}
-          </div>
+          <div className="flex flex-1">
+            {/* Inputs/Resources Column */}
+            <div className={`${showGroupingColumn ? "w-[16.66%]" : "w-[16.66%]"} mr-2 space-y-2`}>
+              {groups.map((group, index) => (
+                <div
+                  key={`input-${group.id}`}
+                  className="toc-column-1 p-4 rounded-md"
+                  style={{ height: `${rowHeights[index] || 150}px` }}
+                >
+                  <EditableBox
+                    value={columns.inputs[index] || ""}
+                    onChange={(value) => updateColumnContent("inputs", index, value)}
+                    placeholder="Enter resources..."
+                    className="bg-transparent h-full"
+                    multiline
+                    onHeightChange={(height) => updateRowHeight(index, height + 32)} // 32px for padding
+                  />
+                </div>
+              ))}
+              {!showGroupingColumn && (
+                <Button variant="outline" className="w-full flex items-center justify-center gap-2" onClick={addGroup}>
+                  <PlusCircle className="h-4 w-4" />
+                  Add Row
+                </Button>
+              )}
+            </div>
 
-          {/* Activities Column */}
-          <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} mr-2 space-y-2`}>
-            {groups.map((group, index) => (
-              <div
-                key={`activity-${group.id}`}
-                className="toc-column-2 p-4 rounded-md"
-                style={{ height: `${rowHeights[index] || 150}px` }}
-              >
-                <EditableBox
-                  value={columns.activities[index] || ""}
-                  onChange={(value) => updateColumnContent("activities", index, value)}
-                  placeholder="Enter activities..."
-                  className="bg-transparent h-full"
-                  multiline
-                  onHeightChange={(height) => updateRowHeight(index, height + 32)}
-                />
-              </div>
-            ))}
-            {!showGroupingColumn && groups.length > 1 && (
-              <Button
-                variant="outline"
-                className="w-full flex items-center justify-center gap-2 border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
-                onClick={() => removeGroup(groups[groups.length - 1].id)}
-              >
-                <Trash2 className="h-4 w-4" />
-                Remove Row
-              </Button>
-            )}
-          </div>
+            {/* Activities Column */}
+            <div className={`${showGroupingColumn ? "w-[16.66%]" : "w-[16.66%]"} mr-2 space-y-2`}>
+              {groups.map((group, index) => (
+                <div
+                  key={`activity-${group.id}`}
+                  className="toc-column-2 p-4 rounded-md"
+                  style={{ height: `${rowHeights[index] || 150}px` }}
+                >
+                  <EditableBox
+                    value={columns.activities[index] || ""}
+                    onChange={(value) => updateColumnContent("activities", index, value)}
+                    placeholder="Enter activities..."
+                    className="bg-transparent h-full"
+                    multiline
+                    onHeightChange={(height) => updateRowHeight(index, height + 32)}
+                  />
+                </div>
+              ))}
+              {!showGroupingColumn && groups.length > 1 && (
+                <Button
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2 border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
+                  onClick={() => removeGroup(groups[groups.length - 1].id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Remove Row
+                </Button>
+              )}
+            </div>
 
-          {/* Outputs Column */}
-          <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} mr-2 space-y-2`}>
-            {groups.map((group, index) => (
-              <div
-                key={`output-${group.id}`}
-                className="toc-column-3 p-4 rounded-md"
-                style={{ height: `${rowHeights[index] || 150}px` }}
-              >
-                <EditableBox
-                  value={columns.outputs[index] || ""}
-                  onChange={(value) => updateColumnContent("outputs", index, value)}
-                  placeholder="Enter outputs..."
-                  className="bg-transparent h-full"
-                  multiline
-                  onHeightChange={(height) => updateRowHeight(index, height + 32)}
-                />
-              </div>
-            ))}
-          </div>
+            {/* Outputs Column */}
+            <div className={`${showGroupingColumn ? "w-[16.66%]" : "w-[16.66%]"} mr-2 space-y-2`}>
+              {groups.map((group, index) => (
+                <div
+                  key={`output-${group.id}`}
+                  className="toc-column-3 p-4 rounded-md"
+                  style={{ height: `${rowHeights[index] || 150}px` }}
+                >
+                  <EditableBox
+                    value={columns.outputs[index] || ""}
+                    onChange={(value) => updateColumnContent("outputs", index, value)}
+                    placeholder="Enter outputs..."
+                    className="bg-transparent h-full"
+                    multiline
+                    onHeightChange={(height) => updateRowHeight(index, height + 32)}
+                  />
+                </div>
+              ))}
+            </div>
 
-          {/* Interim Outcomes Column */}
-          <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} mr-2 space-y-2`}>
-            {groups.map((group, index) => (
-              <div
-                key={`interim-${group.id}`}
-                className="toc-column-4 p-4 rounded-md"
-                style={{ height: `${rowHeights[index] || 150}px` }}
-              >
-                <EditableBox
-                  value={columns.interimOutcomes[index] || ""}
-                  onChange={(value) => updateColumnContent("interimOutcomes", index, value)}
-                  placeholder="Enter interim outcomes..."
-                  className="bg-transparent h-full"
-                  multiline
-                  onHeightChange={(height) => updateRowHeight(index, height + 32)}
-                />
-              </div>
-            ))}
-          </div>
+            {/* Interim Outcomes Column */}
+            <div className={`${showGroupingColumn ? "w-[16.66%]" : "w-[16.66%]"} mr-2 space-y-2`}>
+              {groups.map((group, index) => (
+                <div
+                  key={`interim-${group.id}`}
+                  className="toc-column-4 p-4 rounded-md"
+                  style={{ height: `${rowHeights[index] || 150}px` }}
+                >
+                  <EditableBox
+                    value={columns.interimOutcomes[index] || ""}
+                    onChange={(value) => updateColumnContent("interimOutcomes", index, value)}
+                    placeholder="Enter interim outcomes..."
+                    className="bg-transparent h-full"
+                    multiline
+                    onHeightChange={(height) => updateRowHeight(index, height + 32)}
+                  />
+                </div>
+              ))}
+            </div>
 
-          {/* Longer Term Outcomes Column */}
-          <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} mr-2 space-y-2`}>
-            {groups.map((group, index) => (
-              <div
-                key={`longterm-${group.id}`}
-                className="toc-column-5 p-4 rounded-md"
-                style={{ height: `${rowHeights[index] || 150}px` }}
-              >
-                <EditableBox
-                  value={columns.longerTermOutcomes[index] || ""}
-                  onChange={(value) => updateColumnContent("longerTermOutcomes", index, value)}
-                  placeholder="Enter long-term outcomes..."
-                  className="bg-transparent h-full"
-                  multiline
-                  onHeightChange={(height) => updateRowHeight(index, height + 32)}
-                />
-              </div>
-            ))}
-          </div>
+            {/* Longer Term Outcomes Column */}
+            <div className={`${showGroupingColumn ? "w-[16.66%]" : "w-[16.66%]"} mr-2 space-y-2`}>
+              {groups.map((group, index) => (
+                <div
+                  key={`longterm-${group.id}`}
+                  className="toc-column-5 p-4 rounded-md"
+                  style={{ height: `${rowHeights[index] || 150}px` }}
+                >
+                  <EditableBox
+                    value={columns.longerTermOutcomes[index] || ""}
+                    onChange={(value) => updateColumnContent("longerTermOutcomes", index, value)}
+                    placeholder="Enter long-term outcomes..."
+                    className="bg-transparent h-full"
+                    multiline
+                    onHeightChange={(height) => updateRowHeight(index, height + 32)}
+                  />
+                </div>
+              ))}
+            </div>
 
-          {/* Impact Column */}
-          <div className={`${showGroupingColumn ? "w-[14%]" : "w-[16.66%]"} space-y-2`}>
-            {groups.map((group, index) => (
-              <div
-                key={`impact-${group.id}`}
-                className="toc-column-6 p-4 rounded-md"
-                style={{ height: `${rowHeights[index] || 150}px` }}
-              >
-                <EditableBox
-                  value={columns.impact[index] || ""}
-                  onChange={(value) => updateColumnContent("impact", index, value)}
-                  placeholder="Enter impact..."
-                  className="bg-transparent h-full"
-                  multiline
-                  onHeightChange={(height) => updateRowHeight(index, height + 32)}
-                />
-              </div>
-            ))}
+            {/* Impact Column */}
+            <div className={`${showGroupingColumn ? "w-[16.66%]" : "w-[16.66%]"} space-y-2`}>
+              {groups.map((group, index) => (
+                <div
+                  key={`impact-${group.id}`}
+                  className="toc-column-6 p-4 rounded-md"
+                  style={{ height: `${rowHeights[index] || 150}px` }}
+                >
+                  <EditableBox
+                    value={columns.impact[index] || ""}
+                    onChange={(value) => updateColumnContent("impact", index, value)}
+                    placeholder="Enter impact..."
+                    className="bg-transparent h-full"
+                    multiline
+                    onHeightChange={(height) => updateRowHeight(index, height + 32)}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
