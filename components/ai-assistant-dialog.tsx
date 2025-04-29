@@ -1,8 +1,8 @@
 "use client"
 
-import React from "react"
+import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Upload, Wand2, AlertCircle } from "lucide-react"
+import { Loader2, Upload, Wand2, AlertCircle, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { APP_NAME } from "@/lib/env"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -31,8 +31,36 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
   const [isLoading, setIsLoading] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [diagnosticInfo, setDiagnosticInfo] = useState<any>(null)
+  const [useMockApi, setUseMockApi] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
+
+  // Run diagnostics when dialog opens
+  useEffect(() => {
+    if (open) {
+      runDiagnostics()
+    }
+  }, [open])
+
+  const runDiagnostics = async () => {
+    try {
+      const response = await fetch("/api/diagnose")
+      const data = await response.json()
+      setDiagnosticInfo(data)
+
+      if (data.status === "error") {
+        setError(`Diagnostic error: ${data.message}`)
+        setUseMockApi(true)
+      } else {
+        setUseMockApi(false)
+      }
+    } catch (error) {
+      console.error("Error running diagnostics:", error)
+      setDiagnosticInfo({ status: "error", message: "Failed to run diagnostics" })
+      setUseMockApi(true)
+    }
+  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -75,8 +103,11 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
     setIsLoading(true)
 
     try {
+      // Use either the real API or the mock API based on diagnostics
+      const endpoint = useMockApi ? "/api/mock-analyze" : "/api/analyze"
+
       // Use the API route instead of direct client-side API calls
-      const response = await fetch("/api/analyze", {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -87,16 +118,37 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || data.error || "Failed to analyze text")
+        const errorMessage = data.message || data.error || "Failed to analyze text"
+        console.error("API error:", data)
+
+        // If real API fails, try the mock API as fallback
+        if (!useMockApi) {
+          setUseMockApi(true)
+          toast({
+            title: "Using fallback mode",
+            description: "The AI service is unavailable. Using simulated responses instead.",
+          })
+          // Retry with mock API
+          return handleTextAnalysis()
+        }
+
+        throw new Error(errorMessage)
       }
 
       setAiSuggestions(data.suggestions)
+
+      if (useMockApi) {
+        toast({
+          title: "Using simulated AI",
+          description: "These suggestions are simulated and not from the actual AI service.",
+        })
+      }
     } catch (error) {
       console.error("Error generating AI suggestions:", error)
       setError(error instanceof Error ? error.message : "Failed to generate AI suggestions")
       toast({
         title: "Error",
-        description: "Failed to generate AI suggestions. Please check your API key and try again.",
+        description: "Failed to generate AI suggestions. Please check the error details.",
         variant: "destructive",
       })
     } finally {
@@ -113,13 +165,14 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
   }
 
   // Reset state when dialog opens/closes
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) {
       // Reset state when dialog closes
       setError(null)
       setAiSuggestions("")
       setInputText("")
       setIsLoading(false)
+      setDiagnosticInfo(null)
     }
   }, [open])
 
@@ -130,6 +183,7 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
           <DialogTitle className="flex items-center gap-2">
             <Wand2 className="h-5 w-5" />
             AI Assistant for {APP_NAME}
+            {useMockApi && <span className="text-xs font-normal ml-2">(Simulation Mode)</span>}
           </DialogTitle>
           <DialogDescription>Get AI-powered suggestions to improve your Theory of Change diagram.</DialogDescription>
         </DialogHeader>
@@ -138,7 +192,31 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
           <Alert variant="destructive" className="mt-4">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription className="space-y-2">
+              <p>{error}</p>
+              <div className="flex gap-2 mt-2">
+                <Button size="sm" variant="outline" onClick={runDiagnostics} className="h-8">
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Run Diagnostics
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {useMockApi && !error && (
+          <Alert className="mt-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Using Simulation Mode</AlertTitle>
+            <AlertDescription>
+              <p>The AI service is currently unavailable. Using simulated responses instead.</p>
+              <div className="flex gap-2 mt-2">
+                <Button size="sm" variant="outline" onClick={runDiagnostics} className="h-8">
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Try Real AI
+                </Button>
+              </div>
+            </AlertDescription>
           </Alert>
         )}
 
@@ -165,7 +243,7 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
                 ) : (
                   <>
                     <Wand2 className="mr-2 h-4 w-4" />
-                    Analyze Text
+                    {useMockApi ? "Simulate Analysis" : "Analyze Text"}
                   </>
                 )}
               </Button>
@@ -207,7 +285,7 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
 
         {aiSuggestions && (
           <div className="mt-4">
-            <h3 className="text-sm font-medium mb-2">AI Suggestions:</h3>
+            <h3 className="text-sm font-medium mb-2">{useMockApi ? "Simulated Suggestions:" : "AI Suggestions:"}</h3>
             <div className="bg-muted p-3 rounded-md text-sm whitespace-pre-line">{aiSuggestions}</div>
           </div>
         )}
