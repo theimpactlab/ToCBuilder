@@ -39,8 +39,10 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
 
-  // Run diagnostics when dialog opens
+  // Ensure pointer events are enabled when dialog opens/closes
   useEffect(() => {
+    document.body.style.pointerEvents = "auto"
+
     if (open) {
       runDiagnostics()
     }
@@ -62,6 +64,9 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
       console.error("Error running diagnostics:", error)
       setDiagnosticInfo({ status: "error", message: "Failed to run diagnostics" })
       setUseMockApi(true)
+    } finally {
+      // Ensure pointer events are enabled
+      document.body.style.pointerEvents = "auto"
     }
   }
 
@@ -88,6 +93,9 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
         "Based on the uploaded document, I recommend the following changes to your Theory of Change:\n\n1. Update your Need statement to focus more on the root causes identified in the document\n\n2. Add a new group for 'Stakeholder Engagement' with specific activities\n\n3. Refine your long-term outcomes to better align with the impact metrics mentioned in section 3.2",
       )
       setModelUsed("simulation")
+
+      // Ensure pointer events are enabled
+      document.body.style.pointerEvents = "auto"
     }, 2000)
   }
 
@@ -198,6 +206,8 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
       })
     } finally {
       setIsLoading(false)
+      // Ensure pointer events are enabled
+      document.body.style.pointerEvents = "auto"
     }
   }, [inputText, toast, useMockApi])
 
@@ -207,6 +217,9 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
     onApplySuggestions({
       suggestions: aiSuggestions,
     })
+
+    // Ensure pointer events are enabled
+    document.body.style.pointerEvents = "auto"
   }
 
   const switchToMockApi = () => {
@@ -217,6 +230,15 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
       title: "Switched to simulation mode",
       description: "Now using simulated AI responses instead of the OpenAI API.",
     })
+
+    // Ensure pointer events are enabled
+    document.body.style.pointerEvents = "auto"
+  }
+
+  const handleDialogClose = () => {
+    // Ensure pointer events are enabled when dialog closes
+    document.body.style.pointerEvents = "auto"
+    onOpenChange(false)
   }
 
   // Reset state when dialog opens/closes
@@ -230,11 +252,14 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
       setIsLoading(false)
       setDiagnosticInfo(null)
       setModelUsed(null)
+
+      // Ensure pointer events are enabled
+      document.body.style.pointerEvents = "auto"
     }
   }, [open])
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -389,7 +414,7 @@ export function AiAssistantDialog({ open, onOpenChange, onApplySuggestions }: Ai
         )}
 
         <DialogFooter className="flex justify-between mt-6">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleDialogClose}>
             Cancel
           </Button>
           <Button onClick={handleApplySuggestions} disabled={!aiSuggestions || isLoading}>

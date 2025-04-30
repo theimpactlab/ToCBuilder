@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,14 @@ interface ColorThemeDialogProps {
 
 export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) {
   const [activeTab, setActiveTab] = useState("header")
-  const { colors, updateColor, updateAllColumnColors } = useColorTheme()
+  const { colors, updateColor, updateAllColumnColors, isUpdating } = useColorTheme()
+
+  // Ensure pointer events are enabled when dialog closes
+  useEffect(() => {
+    if (!open) {
+      document.body.style.pointerEvents = "auto"
+    }
+  }, [open])
 
   // Function to determine if text should be white or black based on background color
   const getTextColor = (bgColor: string) => {
@@ -41,8 +48,14 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
     return luminance > 0.5 ? "#000000" : "#ffffff"
   }
 
+  const handleDialogClose = () => {
+    // Ensure pointer events are enabled when dialog closes
+    document.body.style.pointerEvents = "auto"
+    onOpenChange(false)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Customize Color Theme</DialogTitle>
@@ -248,7 +261,9 @@ export function ColorThemeDialog({ open, onOpenChange }: ColorThemeDialogProps) 
         </Tabs>
 
         <DialogFooter>
-          <Button onClick={() => onOpenChange(false)}>Apply Changes</Button>
+          <Button onClick={handleDialogClose} disabled={isUpdating}>
+            {isUpdating ? "Applying..." : "Apply Changes"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
