@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,14 @@ interface LoadFromFileDialogProps {
 export function LoadFromFileDialog({ open, onOpenChange, onDiagramLoaded }: LoadFromFileDialogProps) {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+
+  // Add a client-side check for the file system support
+  const [isFileSystemSupported, setIsFileSystemSupported] = useState(false)
+
+  // Check file system support on client side only
+  useEffect(() => {
+    setIsFileSystemSupported(fileSystemStorage.isSupported())
+  }, [])
 
   const handleLoadFromFile = async () => {
     setIsLoading(true)
@@ -110,8 +118,6 @@ export function LoadFromFileDialog({ open, onOpenChange, onDiagramLoaded }: Load
       setIsLoading(false)
     }
   }
-
-  const isFileSystemSupported = fileSystemStorage.isSupported()
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

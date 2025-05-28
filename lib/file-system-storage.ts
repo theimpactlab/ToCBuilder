@@ -1,7 +1,8 @@
 import type { SavedDiagram } from "./storage-service"
 
-// Check if File System Access API is supported
+// Check if File System Access API is supported - only run on client side
 const isFileSystemAccessSupported = () => {
+  if (typeof window === "undefined") return false
   return "showSaveFilePicker" in window && "showOpenFilePicker" in window && "showDirectoryPicker" in window
 }
 

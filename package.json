@@ -65,6 +65,7 @@
     "jspdf": "latest",
     "uuid": "^9.0.1",
     "ai": "latest",
+    "@types/uuid": "^9.0.0",
     "@ai-sdk/openai": "latest"
   },
   "devDependencies": {

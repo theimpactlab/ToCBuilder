@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,14 @@ export function SaveToFileDialog({ open, onOpenChange }: SaveToFileDialogProps) 
   const [isSaving, setIsSaving] = useState(false)
   const [activeTab, setActiveTab] = useState("json")
   const { headerData, flowData, groups, columns, themeColors, logoUrl, showGroupingColumn } = useTheoryOfChangeStore()
+
+  // Add a client-side check for the file system support
+  const [isFileSystemSupported, setIsFileSystemSupported] = useState(false)
+
+  // Check file system support on client side only
+  useEffect(() => {
+    setIsFileSystemSupported(fileSystemStorage.isSupported())
+  }, [])
 
   // Reset form when dialog opens
   const handleOpenChange = (open: boolean) => {
@@ -132,8 +140,6 @@ export function SaveToFileDialog({ open, onOpenChange }: SaveToFileDialogProps) 
       setIsSaving(false)
     }
   }
-
-  const isFileSystemSupported = fileSystemStorage.isSupported()
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
