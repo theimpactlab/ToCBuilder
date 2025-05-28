@@ -8,39 +8,30 @@ import { PlusCircle, Trash2, Wand2, Columns } from "lucide-react"
 import { AiAssistantDialog } from "./ai-assistant-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { LogoUpload } from "./logo-upload"
+import { useTheoryOfChangeStore } from "@/lib/store"
 
 export default function TheoryOfChangeBuilder() {
   const { toast } = useToast()
   const [isAiDialogOpen, setIsAiDialogOpen] = useState(false)
-  const [showGroupingColumn, setShowGroupingColumn] = useState(false)
-  const [groups, setGroups] = useState([{ id: 1, name: "Grouping" }])
-  const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [rowHeights, setRowHeights] = useState<Record<number, number>>({})
 
-  const [headerData, setHeaderData] = useState({
-    title: "Theory of Change Template",
-    need: "Need:",
-    vision: "Vision:",
-    purpose: "Purpose:",
-  })
-
-  const [flowData, setFlowData] = useState({
-    inputs: "Resources",
-    activities: "Activities",
-    outputs: "Outputs",
-    interimOutcomes: "Interim Outcomes",
-    longerTermOutcomes: "Longer term Outcomes",
-    impact: "Impact",
-  })
-
-  const [columns, setColumns] = useState({
-    inputs: Array(1).fill(""),
-    activities: Array(1).fill(""),
-    outputs: Array(1).fill(""),
-    interimOutcomes: Array(1).fill(""),
-    longerTermOutcomes: Array(1).fill(""),
-    impact: Array(1).fill(""),
-  })
+  // Use the store for all state
+  const {
+    headerData,
+    updateHeaderData,
+    flowData,
+    updateFlowData,
+    groups,
+    addGroup,
+    removeGroup,
+    updateGroupName,
+    columns,
+    updateColumnContent,
+    logoUrl,
+    setLogoUrl,
+    showGroupingColumn,
+    toggleGroupingColumn,
+  } = useTheoryOfChangeStore()
 
   // Function to update row heights
   const updateRowHeight = (rowIndex: number, height: number) => {
@@ -53,66 +44,6 @@ export default function TheoryOfChangeBuilder() {
 
   const handleLogoChange = (newLogoUrl: string | null) => {
     setLogoUrl(newLogoUrl)
-  }
-
-  const addGroup = () => {
-    const newId = groups.length > 0 ? Math.max(...groups.map((g) => g.id)) + 1 : 1
-    setGroups([...groups, { id: newId, name: "Grouping" }])
-
-    // Update columns to match new group count
-    setColumns({
-      inputs: [...columns.inputs, ""],
-      activities: [...columns.activities, ""],
-      outputs: [...columns.outputs, ""],
-      interimOutcomes: [...columns.interimOutcomes, ""],
-      longerTermOutcomes: [...columns.longerTermOutcomes, ""],
-      impact: [...columns.impact, ""],
-    })
-  }
-
-  const removeGroup = (id: number) => {
-    const index = groups.findIndex((g) => g.id === id)
-    if (index === -1) return
-
-    const newGroups = [...groups]
-    newGroups.splice(index, 1)
-    setGroups(newGroups)
-
-    // Update columns to match new group count
-    setColumns({
-      inputs: columns.inputs.filter((_, i) => i !== index),
-      activities: columns.activities.filter((_, i) => i !== index),
-      outputs: columns.outputs.filter((_, i) => i !== index),
-      interimOutcomes: columns.interimOutcomes.filter((_, i) => i !== index),
-      longerTermOutcomes: columns.longerTermOutcomes.filter((_, i) => i !== index),
-      impact: columns.impact.filter((_, i) => i !== index),
-    })
-
-    // Update row heights
-    const newRowHeights = { ...rowHeights }
-    delete newRowHeights[index]
-
-    // Shift all heights for rows after the deleted one
-    Object.keys(newRowHeights).forEach((key) => {
-      const keyNum = Number.parseInt(key)
-      if (keyNum > index) {
-        newRowHeights[keyNum - 1] = newRowHeights[keyNum]
-        delete newRowHeights[keyNum]
-      }
-    })
-
-    setRowHeights(newRowHeights)
-  }
-
-  const updateGroupName = (id: number, name: string) => {
-    setGroups(groups.map((g) => (g.id === id ? { ...g, name } : g)))
-  }
-
-  const updateColumnContent = (column: keyof typeof columns, index: number, content: string) => {
-    setColumns({
-      ...columns,
-      [column]: columns[column].map((item, i) => (i === index ? content : item)),
-    })
   }
 
   const handleAiAssist = () => {
@@ -128,11 +59,7 @@ export default function TheoryOfChangeBuilder() {
     setIsAiDialogOpen(false)
   }
 
-  const toggleGroupingColumn = () => {
-    setShowGroupingColumn(!showGroupingColumn)
-  }
-
-  // Reset row heights when columns change
+  // Reset row heights when groups change
   useEffect(() => {
     const newRowHeights: Record<number, number> = {}
     groups.forEach((_, index) => {
@@ -146,7 +73,7 @@ export default function TheoryOfChangeBuilder() {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Theory of Change Diagram</h2>
         <div className="flex gap-2">
-          <Button onClick={toggleGroupingColumn} variant="outline" className="gap-2">
+          <Button onClick={() => toggleGroupingColumn()} variant="outline" className="gap-2">
             <Columns className="h-4 w-4" />
             {showGroupingColumn ? "Hide Grouping" : "Show Grouping"}
           </Button>
@@ -164,7 +91,7 @@ export default function TheoryOfChangeBuilder() {
           <div className="toc-header text-2xl font-bold p-4 rounded-md w-1/3">
             <EditableBox
               value={headerData.title}
-              onChange={(value) => setHeaderData({ ...headerData, title: value })}
+              onChange={(value) => updateHeaderData({ title: value })}
               className="bg-transparent text-white"
             />
           </div>
@@ -178,15 +105,15 @@ export default function TheoryOfChangeBuilder() {
           <div className="toc-need p-4 rounded-md flex flex-col h-[180px]">
             <EditableBox
               value={headerData.need}
-              onChange={(value) => setHeaderData({ ...headerData, need: value })}
+              onChange={(value) => updateHeaderData({ need: value })}
               className="bg-transparent text-white font-semibold mb-2"
             />
-            <div className="flex-1">
+            <div className="mt-1">
               <EditableBox
-                value=""
+                value={headerData.needContent || ""}
                 placeholder="Enter need details here..."
-                onChange={() => {}}
-                className="bg-transparent text-white h-full"
+                onChange={(value) => updateHeaderData({ needContent: value })}
+                className="bg-transparent text-white h-auto"
                 multiline
               />
             </div>
@@ -194,15 +121,15 @@ export default function TheoryOfChangeBuilder() {
           <div className="toc-vision p-4 rounded-md flex flex-col h-[180px]">
             <EditableBox
               value={headerData.vision}
-              onChange={(value) => setHeaderData({ ...headerData, vision: value })}
+              onChange={(value) => updateHeaderData({ vision: value })}
               className="bg-transparent text-white font-semibold mb-2"
             />
-            <div className="flex-1">
+            <div className="mt-1">
               <EditableBox
-                value=""
+                value={headerData.visionContent || ""}
                 placeholder="Enter vision details here..."
-                onChange={() => {}}
-                className="bg-transparent text-white h-full"
+                onChange={(value) => updateHeaderData({ visionContent: value })}
+                className="bg-transparent text-white h-auto"
                 multiline
               />
             </div>
@@ -210,15 +137,15 @@ export default function TheoryOfChangeBuilder() {
           <div className="toc-purpose p-4 rounded-md flex flex-col h-[180px]">
             <EditableBox
               value={headerData.purpose}
-              onChange={(value) => setHeaderData({ ...headerData, purpose: value })}
+              onChange={(value) => updateHeaderData({ purpose: value })}
               className="bg-transparent text-white font-semibold mb-2"
             />
-            <div className="flex-1">
+            <div className="mt-1">
               <EditableBox
-                value=""
+                value={headerData.purposeContent || ""}
                 placeholder="Enter purpose details here..."
-                onChange={() => {}}
-                className="bg-transparent text-white h-full"
+                onChange={(value) => updateHeaderData({ purposeContent: value })}
+                className="bg-transparent text-white h-auto"
                 multiline
               />
             </div>
@@ -234,7 +161,7 @@ export default function TheoryOfChangeBuilder() {
             <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
               <EditableBox
                 value={flowData.inputs}
-                onChange={(value) => setFlowData({ ...flowData, inputs: value })}
+                onChange={(value) => updateFlowData({ inputs: value })}
                 className="bg-transparent text-center"
               />
             </div>
@@ -242,7 +169,7 @@ export default function TheoryOfChangeBuilder() {
             <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
               <EditableBox
                 value={flowData.activities}
-                onChange={(value) => setFlowData({ ...flowData, activities: value })}
+                onChange={(value) => updateFlowData({ activities: value })}
                 className="bg-transparent text-center"
               />
             </div>
@@ -250,7 +177,7 @@ export default function TheoryOfChangeBuilder() {
             <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
               <EditableBox
                 value={flowData.outputs}
-                onChange={(value) => setFlowData({ ...flowData, outputs: value })}
+                onChange={(value) => updateFlowData({ outputs: value })}
                 className="bg-transparent text-center"
               />
             </div>
@@ -258,7 +185,7 @@ export default function TheoryOfChangeBuilder() {
             <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
               <EditableBox
                 value={flowData.interimOutcomes}
-                onChange={(value) => setFlowData({ ...flowData, interimOutcomes: value })}
+                onChange={(value) => updateFlowData({ interimOutcomes: value })}
                 className="bg-transparent text-center"
               />
             </div>
@@ -266,7 +193,7 @@ export default function TheoryOfChangeBuilder() {
             <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
               <EditableBox
                 value={flowData.longerTermOutcomes}
-                onChange={(value) => setFlowData({ ...flowData, longerTermOutcomes: value })}
+                onChange={(value) => updateFlowData({ longerTermOutcomes: value })}
                 className="bg-transparent text-center"
               />
             </div>
@@ -274,7 +201,7 @@ export default function TheoryOfChangeBuilder() {
             <div className="toc-flow px-4 py-2 rounded-md text-center w-[14%]">
               <EditableBox
                 value={flowData.impact}
-                onChange={(value) => setFlowData({ ...flowData, impact: value })}
+                onChange={(value) => updateFlowData({ impact: value })}
                 className="bg-transparent text-center"
               />
             </div>

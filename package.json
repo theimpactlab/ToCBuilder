@@ -63,6 +63,7 @@
     "zustand": "latest",
     "html2canvas": "latest",
     "jspdf": "latest",
+    "uuid": "^9.0.1",
     "ai": "latest",
     "@ai-sdk/openai": "latest"
   },
