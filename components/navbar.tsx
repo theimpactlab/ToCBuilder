@@ -8,7 +8,6 @@ import {
   Save,
   Share2,
   Settings,
-  FileText,
   Palette,
   FileDown,
   HelpCircle,
@@ -34,6 +33,7 @@ import { LoadFromFileDialog } from "./load-from-file-dialog"
 import { useColorTheme } from "@/lib/color-theme-context"
 import { useToast } from "@/hooks/use-toast"
 import { useTheoryOfChangeStore } from "@/lib/store"
+import Image from "next/image"
 
 export function Navbar() {
   const [isColorDialogOpen, setIsColorDialogOpen] = useState(false)
@@ -81,12 +81,22 @@ export function Navbar() {
   return (
     <header className="border-b">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <FileText className="h-6 w-6" />
-          <div>
-            <h1 className="text-xl font-bold">Theory of Change Builder</h1>
-            {currentDiagramName && <p className="text-xs text-muted-foreground">Current: {currentDiagramName}</p>}
+        <div className="flex items-center gap-3">
+          <div className="relative h-8 w-auto">
+            <Image
+              src="/poweredbyti.png"
+              alt="Theory of Change Builder"
+              width={200}
+              height={32}
+              className="h-8 w-auto object-contain"
+              priority
+            />
           </div>
+          {currentDiagramName && (
+            <div className="ml-2">
+              <p className="text-sm text-muted-foreground">Current: {currentDiagramName}</p>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -109,7 +119,7 @@ export function Navbar() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setIsLoadDialogOpen(true)}>
-                <FileText className="h-4 w-4 mr-2" />
+                <FolderOpen className="h-4 w-4 mr-2" />
                 From Browser Storage
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -129,7 +139,7 @@ export function Navbar() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setIsSaveDialogOpen(true)}>
-                <FileText className="h-4 w-4 mr-2" />
+                <Save className="h-4 w-4 mr-2" />
                 To Browser Storage
               </DropdownMenuItem>
             </DropdownMenuContent>
